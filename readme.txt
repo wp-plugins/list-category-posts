@@ -17,8 +17,6 @@ Usage: [catlist argument1=value1 argument2=value2].
 * Edit the default.php file on templates to customize the way the categories are displayed, or use the default one included in the plugin's code. You can use several different templates if you want.
 * You can find the List Category Posts widget in your widgets. Hasn't been tested, still in development, but usable.
 
-**If you're updating List Category Posts from version 0.1**, you must change the code in the pages using it, since it's not backwards compatible. LCP now uses WordPress's shortcode API, in order to allow arguments. You should chang the previous [catlist=ID] to [catlist id=ID].
-
 ==Other notes==
 
 **Usage**
@@ -85,6 +83,8 @@ Your comments and feedback are welcome at: http://picandocodigo.net/programacion
 = 0.7.2 =
 Template system has changed. Now the posts loop must be defined inside the template. Check templates/default.php for an example.
 
+= 0.1 =
+If updating from 0.1, you must change the code, since it's not backwards compatible. LCP now uses WordPress's shortcode API, in order to allow arguments. You should chang the previous [catlist=ID] to [catlist id=ID].
 
 == Changelog ==
 

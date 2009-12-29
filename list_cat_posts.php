@@ -28,7 +28,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //Sidebar Widget:
 include('list_cat_posts_widget.php');
 //Filters and actions:
-add_action('plugins_loaded', 'lcp_load_widget');
+if ( is_admin() ){
+	add_action('plugins_loaded', 'lcp_load_widget');
+	add_action( 'admin_menu', 'add_mymenu' );
+	add_action( 'admin_init', 'register_lcp_settings' );
+}
 
 //Shortcode [catlist parameter="value"]
 function catlist_func($atts, $content=null) {
@@ -106,10 +110,6 @@ function list_category_posts($atts){
 		$output .= "</ul>";
 	}
 	return $output;
-}
-
-function lcp_add_option_page(){
-	add_options_page('List Category Posts', 'List Category Posts', 'manage_options','list-category-posts/list_cat_posts_options.php');
 }
 
 ?>
