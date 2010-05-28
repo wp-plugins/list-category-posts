@@ -3,7 +3,7 @@
 Plugin Name: List Category Posts - Template
 Plugin URI: http://picandocodigo.net/programacion/wordpress/list-category-posts-wordpress-plugin-english/
 Description: Template file for List Category Post Plugin for Wordpress which is used by plugin by argument template=value.php
-Version: 0.4
+Version: 0.6
 Author: Radek Uldrych & Fernando Briano 
 Author URI: http://picandocodigo.net http://radoviny.net
 */
@@ -41,11 +41,13 @@ foreach($catposts as $single):
 	//Show author?
 	if($atts['author']=='yes'){
 		$lcp_userdata = get_userdata($single->post_author);
-		$output.=" - ".$lcp_userdata->user_nicename;
+		$output.=" - ".$lcp_userdata->display_name;
 	}
 	//Show content?
 	if($atts['content']=='yes' && $single->post_content){
-		$output .= "<p>$single->post_content</p>";
+		$lcpcontent = apply_filters('the_content', $single->post_content); // added to parse shortcodes
+		$lcpcontent = str_replace(']]>', ']]&gt', $lcpcontent); // added to parse shortcodes
+		$output.= '<p>' . $lcpcontent . '</p>'; // line tweaked to output filtered content
 	}
 	//Show excerpt?
 	if($atts['excerpt']=='yes' && $single->post_excerpt && !($atts['content']=='yes' && $single->post_content) ){
