@@ -3,12 +3,12 @@
 Plugin Name: List category posts
 Plugin URI: http://picandocodigo.net/programacion/wordpress/list-category-posts-wordpress-plugin-english/
 Description: List Category Posts allows you to list posts from a category into a post/page using the [catlist] shortcode. This shortcode accepts a category name or id, the order in which you want the posts to display, and the number of posts to display. You can use [catlist] as many times as needed with different arguments. Usage: [catlist argument1=value1 argument2=value2].
-Version: 0.13
+Version: 0.14
 Author: Fernando Briano
 Author URI: http://picandocodigo.net/
 */
 
-/* Copyright 2008-2010  Fernando Briano  (email : fernando@picandocodigo.net)
+/* Copyright 2008-2011  Fernando Briano  (email : fernando@picandocodigo.net)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -53,7 +53,10 @@ function catlist_func($atts, $content = null) {
 			'content' => 'no',
 			'catlink' => 'no',
 			'comments' => 'no',
-			'thumbnail' => 'no'
+			'thumbnail' => 'no',
+			'post_type' => '',
+			'post_parent' => '0',
+			'class' => 'lcp_catlist'
 		), $atts);
 	return list_category_posts($atts);
 }
@@ -86,12 +89,7 @@ function list_category_posts($atts){
 	if ((!empty($tplFileName)) && (is_readable($tplFileName))) {
 		require($tplFileName);
 	}else{
-		if ($cat_link_string != ''){
-			$lcp_output = '<p><strong>' . $cat_link_string . '</strong></p>';
-		} else {
-			$lcp_output = '';
-		}
-		$lcp_output .= '<ul class="lcp_catlist">';//For default ul
+		$lcp_output = '<ul class="'.$atts['class'].'">';//For default ul
 		foreach ($catposts as $single):
 			$lcp_output .= lcp_display_post($single, $atts);
 		endforeach;
@@ -123,13 +121,16 @@ function lcp_category($lcp_category_id, $lcp_category_name, $atts){
 		$cat_link_string = '<a href="' . $cat_link . '" title="' . $cat_title . '">' . $cat_title . '</a>';
 	}
 	//Build the query for get_posts()
-	$catposts = get_posts($lcp_category.'&numberposts=' . $atts['numberposts'] .
+	$lcp_query = $lcp_category.'&numberposts=' . $atts['numberposts'] .
 				'&orderby=' . $atts['orderby'] .
 				'&order=' . $atts['order'] .
 				'&exclude=' . $atts['excludeposts'] .
 				'&tag=' . $atts['tags'] .
-				'&offset=' . $atts['offset'] );
-	return $catposts;
+				'&offset=' . $atts['offset'];
+	if($atts['post_type']): $lcp_query .= '&post_type=' . $atts['post_type']; endif;
+	if($atts['post_parent']): $lcp_query .= '&post_parent=' . $atts['post_parent']; endif;
+
+	return get_posts($lcp_query);
 }
 
 function lcp_display_post($single, $atts){
@@ -140,7 +141,7 @@ function lcp_display_post($single, $atts){
 		$lcp_output .=  ')';
 	}
 	if ($atts['date']=='yes'){
-		$lcp_output .= lcp_showdate($single);
+		$lcp_output .= lcp_showdate($single, $atts['dateformat']);
 	}
 	if ($atts['author']=='yes'){
 		$lcp_output .= " - ".lcp_showauthor($single) . '<br/>';
@@ -151,8 +152,8 @@ function lcp_display_post($single, $atts){
 	if ($atts['excerpt']!='no' && !($atts['content']=='yes' && $single->post_content) ){
 		$lcp_output .= lcp_excerpt($single);
 	}
-	if ($atts['thumbnails']=='yes'){
-		$lcp_output .= lcp_thumbnails($single);
+	if ($atts['thumbnail']=='yes'){
+		$lcp_output .= lcp_thumbnail($single);
 	}
 	$lcp_output.="</li>";
 	return $lcp_output;
@@ -167,8 +168,8 @@ function lcp_showauthor($single){
 	return $lcp_userdata->display_name;
 }
 
-function lcp_showdate($single){
-	return  ' - ' . get_the_time($atts['dateformat'], $single);//by Verex, great idea!
+function lcp_showdate($single, $dateformat){
+	return  ' - ' . get_the_time($dateformat, $single);//by Verex, great idea!
 }
 
 function lcp_content($single){
@@ -194,12 +195,12 @@ function lcp_excerpt($single){
 }
 
 
-function lcp_thumbnails($single){
-	$lcp_thumbnails = '';
+function lcp_thumbnail($single){
+	$lcp_thumbnail = '';
 	if ( has_post_thumbnail($single->ID) ) {
-		$lcp_thumbnails = get_the_post_thumbnail($single->ID);
+		$lcp_thumbnail = get_the_post_thumbnail($single->ID);
 	}
-	return $lcp_thumbnails;
+	return $lcp_thumbnail;
 }
 
 /** TODO - These are the todo's for a 1.0 release:
