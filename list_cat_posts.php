@@ -3,12 +3,12 @@
 Plugin Name: List category posts
 Plugin URI: http://picandocodigo.net/programacion/wordpress/list-category-posts-wordpress-plugin-english/
 Description: List Category Posts allows you to list posts from a category into a post/page using the [catlist] shortcode. This shortcode accepts a category name or id, the order in which you want the posts to display, and the number of posts to display. You can use [catlist] as many times as needed with different arguments. Usage: [catlist argument1=value1 argument2=value2].
-Version: 0.13
+Version: 0.16
 Author: Fernando Briano
 Author URI: http://picandocodigo.net/
 */
 
-/* Copyright 2008-2010  Fernando Briano  (email : fernando@picandocodigo.net)
+/* Copyright 2008-2011  Fernando Briano  (email : fernando@picandocodigo.net)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -53,7 +53,13 @@ function catlist_func($atts, $content = null) {
 			'content' => 'no',
 			'catlink' => 'no',
 			'comments' => 'no',
-			'thumbnail' => 'no'
+			'thumbnail' => 'no',
+			'post_type' => '',
+			'post_parent' => '0',
+			'class' => 'lcp_catlist',
+			'customfield_name' => '',
+			'customfield_value' =>'',
+			'customfield_display' =>''
 		), $atts);
 	return list_category_posts($atts);
 }
@@ -66,17 +72,26 @@ add_shortcode('catlist', 'catlist_func');
  * @param array $atts
  */
 function list_category_posts($atts){
-	$lcp_category_id = $atts['id'];
+	$lcp_category_id = $atts['id'];	
 	$lcp_category_name = $atts['name'];
 	
 	//Get the category posts:
 	$catposts = lcp_category($lcp_category_id, $lcp_category_name, $atts);
 	
+	$lcp_output = '';
+	
+	//Link to the category:
+	if ($atts['catlink'] == 'yes'){
+		$cat_link = get_category_link($lcp_category_id);
+		$cat_title = get_cat_name($lcp_category_id);
+		$lcp_output .= '<a href="' . $cat_link . '" title="' . $cat_title . '">' . $cat_title . '</a>';
+	}
+	
 	//Template code:
 	$tplFileName = null;
 	$possibleTemplates = array(
 		// File locations lower in list override others
-		STYLESHEETPATH.'/list-category-posts/'.$atts['template'].'.php',
+		TEMPLATEPATH.'/list-category-posts/'.$atts['template'].'.php',
 	);
 	foreach ($possibleTemplates as $key => $file) {
 		if (is_readable($file)) {
@@ -86,76 +101,84 @@ function list_category_posts($atts){
 	if ((!empty($tplFileName)) && (is_readable($tplFileName))) {
 		require($tplFileName);
 	}else{
-		if ($cat_link_string != ''){
-			$lcp_output = '<p><strong>' . $cat_link_string . '</strong></p>';
-		} else {
-			$lcp_output = '';
-		}
-		$lcp_output .= '<ul class="lcp_catlist">';//For default ul
+		// Default template
+		$lcp_output .= '<ul class="'.$atts['class'].'">';
+		
 		foreach ($catposts as $single):
 			$lcp_output .= lcp_display_post($single, $atts);
 		endforeach;
+		
 		$lcp_output .= "</ul>";
 	}
 	return $lcp_output;
 }
 
 /**
- * Get the categories
+ * Get the categories & posts
  * @param string $lcp_category_id
  * @param string $lcp_category_name
  */
 function lcp_category($lcp_category_id, $lcp_category_name, $atts){
 	if($lcp_category_name != 'default' && $lcp_category_id == '0'){
 		$lcp_category = 'category_name=' . $atts['name'];
-		$category_id = get_cat_ID($atts['name']);
 	}else{
-		$lcp_category = 'cat=' . $atts['id'];
-		$category_id = $atts['id'];
+		$lcp_category = 'cat=' . $lcp_category_id;
 	}
 
-	//Link to the category:
-	$cat_link_string = '';
-	if ($atts['catlink'] == 'yes'){
-		$cat_link = get_category_link($category_id);
-		$cat_data = get_category($category_id);
-		$cat_title = $cat_data->name;
-		$cat_link_string = '<a href="' . $cat_link . '" title="' . $cat_title . '">' . $cat_title . '</a>';
-	}
 	//Build the query for get_posts()
-	$catposts = get_posts($lcp_category.'&numberposts=' . $atts['numberposts'] .
+	$lcp_query = $lcp_category.'&numberposts=' . $atts['numberposts'] .
 				'&orderby=' . $atts['orderby'] .
 				'&order=' . $atts['order'] .
 				'&exclude=' . $atts['excludeposts'] .
 				'&tag=' . $atts['tags'] .
-				'&offset=' . $atts['offset'] );
-	return $catposts;
+				'&offset=' . $atts['offset'];
+	
+	// Post type and post parent:
+	if($atts['post_type']): $lcp_query .= '&post_type=' . $atts['post_type']; endif;
+	if($atts['post_parent']): $lcp_query .= '&post_parent=' . $atts['post_parent']; endif;
+
+	// Custom fields 'customfield_name' & 'customfield_value' should both be defined
+	if($atts['customfield_name']!='' && $atts['customfield_value'] != ''):
+		$lcp_query .= '&meta_key=' . $atts['customfield_name'] . '&meta_value=' . $atts['customfield_value'];
+	endif;
+	
+	return get_posts($lcp_query);
 }
 
 function lcp_display_post($single, $atts){
-	$lcp_output .= '<li><a href="' . get_permalink($single->ID).'">' . $single->post_title . '</a>';
+	$lcp_display_output = '<li><a href="' . get_permalink($single->ID).'">' . $single->post_title . '</a>';
 	if ($atts['comments'] == yes){
-		$lcp_output .= ' (';
-		$lcp_output .=  lcp_comments($single);
-		$lcp_output .=  ')';
+		$lcp_display_output .= ' (';
+		$lcp_display_output .=  lcp_comments($single);
+		$lcp_display_output .=  ')';
 	}
+	
 	if ($atts['date']=='yes'){
-		$lcp_output .= lcp_showdate($single);
+		$lcp_display_output .= lcp_showdate($single, $atts['dateformat']);
 	}
+	
 	if ($atts['author']=='yes'){
-		$lcp_output .= " - ".lcp_showauthor($single) . '<br/>';
+		$lcp_display_output .= " - ".lcp_showauthor($single) . '<br/>';
 	}
+	
+	if($atts['customfield_display'] != ''){
+	  $lcp_display_output .= lcp_display_customfields($atts['customfield_display'], $single->ID);
+	}
+	
+	if ($atts['thumbnail']=='yes'){
+		$lcp_display_output .= lcp_thumbnail($single);
+	}
+	
 	if ($atts['content']=='yes' && $single->post_content){
-		$lcp_output.= lcp_content($single); // line tweaked to output filtered content
+		$lcp_display_output.= lcp_content($single); // line tweaked to output filtered content
 	}
-	if ($atts['excerpt']!='no' && !($atts['content']=='yes' && $single->post_content) ){
-		$lcp_output .= lcp_excerpt($single);
+	
+	if ($atts['excerpt']=='yes' && !($atts['content']=='yes' && $single->post_content) ){
+		$lcp_display_output .= lcp_excerpt($single);
 	}
-	if ($atts['thumbnails']=='yes'){
-		$lcp_output .= lcp_thumbnails($single);
-	}
-	$lcp_output.="</li>";
-	return $lcp_output;
+	
+	$lcp_display_output.="</li>";
+	return $lcp_display_output;
 }
 
 function lcp_comments($single){
@@ -167,12 +190,19 @@ function lcp_showauthor($single){
 	return $lcp_userdata->display_name;
 }
 
-function lcp_showdate($single){
-	return  ' - ' . get_the_time($atts['dateformat'], $single);//by Verex, great idea!
+function lcp_showdate($single, $dateformat){
+	return  ' - ' . get_the_time($dateformat, $single);//by Verex, great idea!
 }
 
 function lcp_content($single){
-	$lcp_content = apply_filters('the_content', $single->post_content); // added to parse shortcodes
+	$lcp_content = $single->post_content;
+	//Added to stop a post with catlist to display an infinite loop of catlist shortcode parsing
+	if (preg_match("/\[catlist.*\]/", $lcp_content, $regmatch)){
+		foreach ($regmatch as $match){
+			$lcp_content = str_replace($match, '(...)',$lcp_content);
+		}
+	}
+	$lcp_content = apply_filters('the_content', $lcp_content); // added to parse shortcodes
 	$lcp_content = str_replace(']]>', ']]&gt', $lcp_content); // added to parse shortcodes
 	return '<p>' . $lcp_content . '</p>';
 }
@@ -193,13 +223,43 @@ function lcp_excerpt($single){
 	return '<p>' . $lcp_excerpt . '</p>';
 }
 
-
-function lcp_thumbnails($single){
-	$lcp_thumbnails = '';
+/**
+ * Get the post Thumbnail
+ * @see http://codex.wordpress.org/Function_Reference/get_the_post_thumbnail
+ * @param unknown_type $single
+ */
+function lcp_thumbnail($single){
+	$lcp_thumbnail = '';
 	if ( has_post_thumbnail($single->ID) ) {
-		$lcp_thumbnails = get_the_post_thumbnail($single->ID);
+		$lcp_thumbnail = get_the_post_thumbnail($single->ID);
 	}
-	return $lcp_thumbnails;
+	return $lcp_thumbnail;
+}
+
+/**
+ * Display custom fields.
+ * @see http://codex.wordpress.org/Function_Reference/get_post_custom
+ * @param string $custom_key
+ * @param int $post_id
+ */
+function lcp_display_customfields($custom_key, $post_id){
+	$lcp_customs = '';
+	//Doesn't work for many when having spaces:
+	$custom_key = trim($custom_key);
+	//Create array for many fields:
+	$custom_array = explode(",", $custom_key);
+	//Get post custom fields:
+	$custom_fields = get_post_custom($post_id);
+	//Loop on custom fields and if there's a value, add it:
+	foreach ($custom_array as $something){
+		$my_custom_field = $custom_fields[$something];
+		if (sizeof($my_custom_field) > 0 ):
+			foreach ( $my_custom_field as $key => $value ){
+				$lcp_customs .= $something. " : " . $value . "<br/>";
+			}
+		endif;
+	}
+	return $lcp_customs;
 }
 
 /** TODO - These are the todo's for a 1.0 release:
@@ -207,4 +267,6 @@ function lcp_thumbnails($single){
  *  -Simplify template system
  *  -i18n
  */
+
+
 ?>
