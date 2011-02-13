@@ -67,10 +67,6 @@ class ListCategoryPosts{
             return $catlist_displayer->display();
 
     }
-
-    /**
-     * Templates backwards compatibility
-     */
 }
 
 add_shortcode( 'catlist', array('ListCategoryPosts', 'catlist_func') );
