@@ -1,26 +1,33 @@
 === List category posts ===
 Contributors: fernandobt
-Donate Link: http://picandocodigo.net/programacion/wordpress/list-category-posts-wordpress-plugin-english/
+Donate Link: http://picandocodigo.net/programacion/wordpress/list-category-posts-wordpress-plugin-english/#support
 Tags: list, categories, posts, cms
 Requires at least: 2.8
-Tested up to: 3.1
-Stable tag: 0.18.1
+Tested up to: 3.2..1
+Stable tag: 0.19
 
 == Description ==
-List Category Posts is a simple WordPress plugin which allows you to list posts from a category into a post/page using the [catlist] shortcode. This shortcode accepts a category name or id, the order in which you want the posts to display, and the number of posts to display. You can use [catlist] as many times as needed with different arguments. 
+List Category Posts allows you to list posts from a category into a post/page using the [catlist] shortcode.
+
+The shortcode accepts a category name or id, the order in which you want the posts to display, and the number of posts to display. You can also display the post author, date, excerpt, custom field values, even the content! The [catlist] shortcode can be used as many times as needed with different arguments on each post/page.
 
 Great to use WordPress as a CMS, and create pages with several categories posts.
 
 The plugin includes a widget, which works pretty much the same as the plugin. Just add as many widgets as you want, and select all the available options from the Appearence > Widgets page.
 
-Compatible with WordPress 3.0 and default Twenty Ten theme (http://wordpress.org/support/topic/399754)
+Since version 0.18, **this plugins does not work on server with PHP 4**. If you're still using PHP 4 on your webhost, you should consider upgrading to PHP 5. WordPress 3.1 will be the last version to support PHP 4, from 3.2 and forward, only PHP 5 will be supported. You can still [download an older version of the plugin ] (https://wordpress.org/extend/plugins/list-category-posts/download/ "download an older version of the plugin") if you're using PHP 4.
 
-Usage: [catlist argument1=value1 argument2=value2].
+Works correctly with WordPress 3.1 and default Twenty Ten theme
+(http://wordpress.org/support/topic/399754)
 
-*Notice*: On version 0.17 the plugin was again rewritten as objects. This added a few features, please read the documentation on it.
+**Usage**: `[catlist argument1=value1 argument2=value2]`
 
-Tell us how you use this plugin!
+**Tell us how you use this plugin!**
 http://foro.picandocodigo.net/discussion/261/do-you-like-list-category-posts-read-me
+
+**Support the plugin**
+If you've found the plugin useful, consider making a [donation via PayPal](http://picandocodigo.net/programacion/wordpress/list-category-posts-wordpress-plugin-english/ "Donate via PayPal") or visit my [Amazon Wishlist](http://www.amazon.com/gp/registry/wishlist/2HU1JYOF7DX5Q/ref=wl_web "Amazon Wishlist").
+
 
 ==Installation==
 
@@ -86,6 +93,8 @@ If you use both arguments (wrong!), List Category Posts will show the posts from
 
 * **thumbnail** - Show post thumbnail (http://markjaquith.wordpress.com/2009/12/23/new-in-wordpress-2-9-post-thumbnail-images/). Default is 'no'. Ex: [catlist thumbnail=yes].
 
+* **thumbnail_size** - Either a string keyword (thumbnail, medium, large or full) or a 2-item array representing width and height in pixels, e.g. array(32,32).
+
 * **post_type** - The type of post to show. Available options are: post - Default, page, attachment, any - all post types.
 
 * **post_parent** - Show only the children of the post with this ID. Default: None.
@@ -97,14 +106,15 @@ If you use both arguments (wrong!), List Category Posts will show the posts from
 * **customfield_display** - Display custom field(s). You can specify many fields to show, separating them with a coma. 
 
 
-Your comments and feedback are welcome at: http://foro.picandocodigo.net/categories/list-category-posts
+Your comments and feedback are welcome at:  
+http://foro.picandocodigo.net/categories/list-category-posts
 
 **New Code is welcome too** :D
 
 == Frequently Asked Questions ==
 * **Instructions** on how to use the plugin: http://foro.picandocodigo.net/discussion/251/list-category-posts-documentation/
-* **Template system** how to customize the way the posts are shown: http://foro.picandocodigo.net/discussion/253/list-category-posts-using-templates/
-* **New feature requests** - Contact me on fernando at picandocodigo dot net or check out the forum.
+* **Template system** how to customize the way the posts are shown: http://foro.picandocodigo.net/discussion/253/list-category-posts-using-templates/. I am aware the Template System is not really friendly right now, I'll work on this whenever I get the time to work on the plugin for a while.
+* **New feature requests** - Contact me on fernando at picandocodigo dot net.
 * **Support** I've decided to use WordPress Answers (http://meta.wordpress.stackexchange.com/) as the place for support. It's a great place with a large community of WordPress users and developers. Just ask your question with the tag 'plugin-list-category-post'.
 
 * **FAQ**
@@ -137,11 +147,25 @@ Template system has changed. Custom templates should be stored in WordPress them
 
 == Changelog ==
 
+= 0.19 =
+This update is dedicated to S. Keller from Switzerland who gave me "The Ultimate Hitchhiker's Guide to the Galaxy" from my Amazon Wishlit in appreciation for the plugin. I am really enjoying the read :D. If you 
+* Fixed private post logic, not displaying post if private. Thanks Bainternet from WordPress Answers: http://wordpress.stackexchange.com/questions/12514/list-category-posts-not-showing-posts-marked-private-to-logged-in-users/12520#12520
+* Added thumbnail_size parameter.
+* Added support for custom taxonomies and also moved to the array call of get_posts. Coded by wsherliker, thanks! http://picod.net/32
+* Fixed widget, now it remembers saved options.
+
+= 0.18.3 =
+* Small excerpt fix, some readme file fixing too.
+* Not showing the_content for password protected posts.
+
+= 0.18.2 =
+* Small fixes. Should work for name parameter in all cases now.
+
 = 0.18.1 =
 * Added slug and name to the fetching of category id from previous update.
 
 = 0.18 =
-* Fixed category id bug. Reported and fixed by Eric Celeste / http://eric.clst.org, thanks!
+* Fixed category id bug. Reported and fixed by Eric Celeste - http://eric.clst.org, thanks!
 * Improved template system a liitle bit, now you can pass an HTML tag and a CSS class to sorround each field on your template.
 * Added category link which wasn't working after previous big update.
 
@@ -208,7 +232,7 @@ Template system has changed. Custom templates should be stored in WordPress them
 = 0.9 =
 * admin parameter now shows "display name" instead of "user nice name".
 * Template system has changed: In older version, custom templates got deleted if an automatic upgrade was done. Now templates are stored in the theme folder. (Thanks Paul Clark)
-* Added tag support - http://foro.picandocodigo.net/viewtopic.php?f=28&t=240
+* Added tag support
 
 = 0.8.1 =
 * Fixed bug for 'content'.
