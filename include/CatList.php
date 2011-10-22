@@ -30,25 +30,43 @@ class CatList{
             $this->lcp_category_id = $this->params['id'];
         }
 
-        $lcp_category = 'cat=' . $this->lcp_category_id;
+        $args = array('cat'=> $this->lcp_category_id);
 	
-        //Build the query for get_posts()
-        $lcp_query = $lcp_category.'&numberposts=' . $this->params['numberposts'] .
-                                '&orderby=' . $this->params['orderby'] .
-                                '&order=' . $this->params['order'] .
-                                '&exclude=' . $this->params['excludeposts'] .
-                                '&tag=' . $this->params['tags'] .
-                                '&offset=' . $this->params['offset'];
+        $args = array_merge($args, array(
+        'numberposts' => $this->params['numberposts'],
+        'orderby' => $this->params['orderby'],
+        'order' => $this->params['order'],
+        'exclude' => $this->params['excludeposts'],
+        'offset' => $this->params['offset']
+        ));
 
         // Post type and post parent:
-        if($this->params['post_type']): $lcp_query .= '&post_type=' . $this->params['post_type']; endif;
-        if($this->params['post_parent']): $lcp_query .= '&post_parent=' . $this->params['post_parent']; endif;
+        if($this->params['post_type']): $args['post_type'] = $this->params['post_type']; endif;
+        if($this->params['post_parent']): $args['post_parent'] = $this->params['post_parent']; endif;
 
         // Custom fields 'customfield_name' & 'customfield_value' should both be defined
         if($this->params['customfield_name']!='' && $this->params['customfield_value'] != ''):
-                $lcp_query .= '&meta_key=' . $this->params['customfield_name'] . '&meta_value=' . $this->params['customfield_value'];
+          $args['meta_key'] = $this->params['customfield_name'];
+          $args['meta_value'] = $this->params['customfield_value'];
         endif;
-        $this->lcp_categories_posts = get_posts($lcp_query);
+
+        //Get private posts
+        if(is_user_logged_in()){
+            $args['post_status'] = array('publish','private');
+        }
+
+        // Added custom taxonomy support
+        if ($this->params['taxonomy'] != "" && $this->params['tags'] != "") {
+          $args['tax_query'] = array(array(
+              'taxonomy' => 'topic-tag',
+              'field' => 'slug',
+              'terms' => explode(",",$this->params['tags'])
+          ));
+        } elseif ($this->params['tags'] != "") {
+          $args['tag'] = $this->params['tags'];
+        }
+
+        $this->lcp_categories_posts = get_posts($args);
     }
 
     /**
@@ -57,13 +75,12 @@ class CatList{
      */
     private function get_category_id_by_name($cat_name){
         //We check if the name gets the category id, if not, we check the slug.
-        $term = get_term_by('name', $cat_name, 'category');
-
+        $term = get_term_by('slug', $cat_name, 'category');
         if (!$term):
             $term = get_term_by('name', $cat_name, 'category');
         endif;
 
-        return $term->term_id;
+        return ($term) ? $term->term_id : 0;
     }
 
     public function get_category_id(){
@@ -78,7 +95,7 @@ class CatList{
      * Load category name and link to the category:
      */
     public function get_category_link(){
-        if($this->params['customfield_display'] != ''){
+        if($this->params['catlink'] == 'yes' && $this->lcp_category_id != 0){
             $cat_link = get_category_link($this->lcp_category_id);
             $cat_title = get_cat_name($this->lcp_category_id);
             return '<a href="' . $cat_link . '" title="' . $cat_title . '">' . $cat_title . '</a>';
@@ -169,10 +186,6 @@ class CatList{
                     return $single->post_excerpt;
             }
             $lcp_excerpt = strip_tags($single->post_content);
-            if ( post_password_required($single) ) {
-                    $lcp_excerpt = __('There is no excerpt because this is a protected post.');
-                    return $lcp_excerpt;
-            }
             if (strlen($lcp_excerpt) > 255) {
                     $lcp_excerpt = substr($lcp_excerpt, 0, 252) . '...';
             }
@@ -186,12 +199,13 @@ class CatList{
      * Get the post Thumbnail
      * @see http://codex.wordpress.org/Function_Reference/get_the_post_thumbnail
      * @param unknown_type $single
+     * 
      */
     public function get_thumbnail($single){
         if ($this->params['thumbnail']=='yes'){
             $lcp_thumbnail = '';
             if ( has_post_thumbnail($single->ID) ) {
-                    $lcp_thumbnail = get_the_post_thumbnail($single->ID);
+            	 $lcp_thumbnail = '<a href="' . get_permalink($single->ID).'">' . get_the_post_thumbnail($single->ID, $this->params['thumbnail_size']) . '</a>';
             }
             return $lcp_thumbnail;
         } else {
