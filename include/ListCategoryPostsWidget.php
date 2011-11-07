@@ -1,27 +1,14 @@
 <?php
-/* Copyright 2008-2010  Fernando Briano  (email : fernando@picandocodigo.net)
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 3 of the License, or
-any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
-//Sidebar Widget file
+/**
+ * List Category Posts sidebar widget.
+ * @author fernando@picandocodigo.net
+ */
 require_once 'CatListDisplayer.php';
 
 class ListCategoryPostsWidget extends WP_Widget{
 
 	function ListCategoryPostsWidget() {
-                $opts = array('description' => '');
+                $opts = array('description' => 'List posts from a specified category');
 		parent::WP_Widget(false, $name = 'List Category Posts', $opts);
 	}
 
@@ -59,8 +46,6 @@ class ListCategoryPostsWidget extends WP_Widget{
                 'exclude' => $exclude,
                 'excludeposts' => $excludeposts,
                 'offset' => $offset,
-                //'tags' => '',
-                //'content' => 'no',
                 'catlink' => $showcatlink,
                 'thumbnail' => $thumbnail,
                 'thumbnail_size' => $thumbnail_size
@@ -68,7 +53,6 @@ class ListCategoryPostsWidget extends WP_Widget{
                 
                 $catlist_displayer = new CatListDisplayer($atts);
                 echo  $catlist_displayer->display();
-                echo $lcp_result;
 		echo $after_widget;
 	}
 
@@ -100,6 +84,10 @@ class ListCategoryPostsWidget extends WP_Widget{
 		include('lcp_widget_form.php');
 	}
 }
+
 add_action('widgets_init', create_function('', 'return register_widget("listCategoryPostsWidget");'));
 
+#Working on i18n, if you want to give a hand visit: http://wordpress.stackexchange.com/questions/32339/widget-translation-on-my-plugin
+#$translation_dir = '../languages';
+#load_plugin_textdomain( 'list-category-posts', null, $translation_dir );
 ?>
