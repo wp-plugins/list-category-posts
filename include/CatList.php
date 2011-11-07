@@ -1,8 +1,8 @@
 <?php
 /**
  * The CatList object gets the info for the CatListDisplayer to show.
- * Each shortcode appearence is an instance of this class.
- * @author fernando@picandocodigo.nets
+ * Each time you use the shortcode, you get an instance of this class.
+ * @author fernando@picandocodigo.net
  */
 
 class CatList{
@@ -24,10 +24,14 @@ class CatList{
      * Get the categories & posts
      */
     private function lcp_set_categories(){
-        if($this->params['name'] != '' && $this->params['id'] == '0'){
+        if(isset($this->params['name']) && $this->params['name'] != ''){
             $this->lcp_category_id = $this->get_category_id_by_name($this->params['name']);
-        }else{
+        }elseif (isset($this->params['id']) && $this->params['id'] != '0'){
             $this->lcp_category_id = $this->params['id'];
+        } else {
+          global $post;
+          $categories = get_the_category($post->ID);
+          $this->lcp_category_id = $categories[0]->cat_ID;
         }
 
         $args = array('cat'=> $this->lcp_category_id);
@@ -41,11 +45,11 @@ class CatList{
         ));
 
         // Post type and post parent:
-        if($this->params['post_type']): $args['post_type'] = $this->params['post_type']; endif;
-        if($this->params['post_parent']): $args['post_parent'] = $this->params['post_parent']; endif;
+        if(isset($this->params['post_type'])): $args['post_type'] = $this->params['post_type']; endif;
+        if(isset($this->params['post_parent'])): $args['post_parent'] = $this->params['post_parent']; endif;
 
         // Custom fields 'customfield_name' & 'customfield_value' should both be defined
-        if($this->params['customfield_name']!='' && $this->params['customfield_value'] != ''):
+        if(isset($this->params['customfield_name']) && $this->params['customfield_value'] != ''):
           $args['meta_key'] = $this->params['customfield_name'];
           $args['meta_value'] = $this->params['customfield_value'];
         endif;
@@ -56,13 +60,13 @@ class CatList{
         }
 
         // Added custom taxonomy support
-        if ($this->params['taxonomy'] != "" && $this->params['tags'] != "") {
+        if (isset($this->params['taxonomy']) && $this->params['tags'] != "") {
           $args['tax_query'] = array(array(
-              'taxonomy' => 'topic-tag',
+              'taxonomy' => $this->params['taxonomy'],
               'field' => 'slug',
               'terms' => explode(",",$this->params['tags'])
           ));
-        } elseif ($this->params['tags'] != "") {
+        } elseif (isset($this->params['tags'])) {
           $args['tag'] = $this->params['tags'];
         }
 
@@ -135,7 +139,7 @@ class CatList{
     }
 
     public function get_comments_count($single){
-        if ($this->params['comments'] == 'yes'){
+        if (isset($this->params['comments']) && $this->params['comments'] == 'yes'){
                 return ' (' . $single->comment_count . ')';
         } else {
             return null;
@@ -163,7 +167,7 @@ class CatList{
     }
 
     public function get_content($single){
-        if ($this->params['content']=='yes' && $single->post_content){
+        if (isset($this->params['content']) && $this->params['content'] =='yes' && $single->post_content){
             $lcp_content = $single->post_content;
             //Need to put some more thought on this!
             //Added to stop a post with catlist to display an infinite loop of catlist shortcode parsing
