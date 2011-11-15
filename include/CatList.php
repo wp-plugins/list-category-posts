@@ -7,8 +7,8 @@
 
 class CatList{
     private $params = array();
-    private $lcp_categories_posts = array();
     private $lcp_category_id = 0;
+    private $category_param;
 
     /**
      * Constructor gets the shortcode attributes as parameter
@@ -17,28 +17,16 @@ class CatList{
     public function __construct($atts) {
         $this->params = $atts;
         //Get the category posts:
-         $this->lcp_set_categories();
+        $this->get_lcp_category();
+        $this->set_lcp_parameters();
     }
 
     /**
-     * Get the categories & posts
+     * Order the parameters and query the DB for posts
      */
-    private function lcp_set_categories(){
-        $args = array();
-        if ( isset($this->params['categorypage']) && $this->params['categorypage'] == 'yes' ){
-          global $post;
-          $categories = get_the_category($post->ID);
-          $this->lcp_category_id = $categories[0]->cat_ID;
-        } elseif ( isset($this->params['name']) && $this->params['name'] != '' ){
-          $this->lcp_category_id = $this->get_category_id_by_name($this->params['name']);
-        } elseif ( isset($this->params['id']) && $this->params['id'] != '0' ){
-          $this->lcp_category_id = $this->params['id'];
-        }
+    private function set_lcp_parameters(){
+        $args = array('cat'=> $this->lcp_category_id);
         
-        if ($this->lcp_category_id != 0){
-          $args['category'] = $this->lcp_category_id;
-        }
-	
         $args = array_merge($args, array(
         'numberposts' => $this->params['numberposts'],
         'orderby' => $this->params['orderby'],
@@ -72,10 +60,32 @@ class CatList{
         } else if (isset($this->params['tags'])) {
           $args['tag'] = $this->params['tags'];
         }
-
         $this->lcp_categories_posts = get_posts($args);
     }
 
+
+    private function get_lcp_category(){
+      if ( isset($this->params['categorypage']) && $this->params['categorypage'] == 'yes' ){
+        global $post;
+        $categories = get_the_category($post->ID);
+        $this->lcp_category_id = $categories[0]->cat_ID;
+      } elseif ( isset($this->params['name']) && $this->params['name'] != '' ){
+        if (preg_match('/,/', $this->params['name'])){
+          $categories = '';
+          $cat_array = explode(",", $this->params['name']);
+          foreach ($cat_array as $category) {
+            $id = $this->get_category_id_by_name($category);
+            $categories .= $id . ",";
+          }
+          $this->lcp_category_id = $categories; 
+        } else {
+          $this->lcp_category_id = $this->get_category_id_by_name($this->params['name']);
+        }
+      } elseif ( isset($this->params['id']) && $this->params['id'] != '0' ){
+        $this->lcp_category_id = $this->params['id'];
+      }
+    }
+    
     /**
      * Get the category id from its name
      * by Eric Celeste / http://eric.clst.org
@@ -209,11 +219,17 @@ class CatList{
      * @param unknown_type $single
      * 
      */
-    public function get_thumbnail($single){
+    public function get_thumbnail($single, $lcp_thumb_class = null){
         if ($this->params['thumbnail']=='yes'){
             $lcp_thumbnail = '';
             if ( has_post_thumbnail($single->ID) ) {
-            	 $lcp_thumbnail = '<a href="' . get_permalink($single->ID).'">' . get_the_post_thumbnail($single->ID, $this->params['thumbnail_size']) . '</a>';
+              if ( $lcp_thumb_class != null){
+                $lcp_thumbnail = '<a href="' . get_permalink($single->ID).'">' . 
+                get_the_post_thumbnail($single->ID, $this->params['thumbnail_size'], array('class' => $lcp_thumb_class )) . '</a>';
+              }else {
+                $lcp_thumbnail = '<a href="' . get_permalink($single->ID).'">' . 
+                get_the_post_thumbnail($single->ID, $this->params['thumbnail_size']) . '</a>';
+              }
             }
             return $lcp_thumbnail;
         } else {
