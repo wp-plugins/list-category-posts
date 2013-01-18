@@ -2,9 +2,9 @@
 Contributors: fernandobt
 Donate Link: http://picandocodigo.net/programacion/wordpress/list-category-posts-wordpress-plugin-english/#support
 Tags: list, categories, posts, cms
-Requires at least: 2.8
+Requires at least: 3.3
 Tested up to: 3.5
-Stable tag: 0.27
+Stable tag: 0.27.1
 
 == Description ==
 List Category Posts allows you to list posts from a category into a post/page using the [catlist] shortcode.
@@ -99,7 +99,9 @@ You can use the *categorypage* parameter to make it detect the category id of th
 
 * **excerpt** - Display the post's excerpt. Default is 'no', use excerpt=yes to activate it. If you don't have an excerpt in your post, the plugin will fetch this text from the content, striping its html tags and shortcodes. The limit is set by the *excerpt_size* parameter (55 words by default).
 
-* **excerpt_size** - Set the number of *words* to display from the excerpt. Default is 55. Eg: `excerpt_size = 30`
+* **excerpt_size**
+  * If you are using WordPress >= 3.3: Set the number of *words* to display from the excerpt. Default is 55. Eg: `excerpt_size = 30`
+  * If for some reason you can't update your WordPress and are still using WordPress < 3.3, this will use a fallback function instead of `wp_trim_words` where you'll have to set the number of *characters* insted of words with this parameter.
 
 * **excludeposts** - IDs of posts to exclude from the list. Use 'this' to exclude the current post. Ex: [catlist excludeposts=this,12,52,37]
 
@@ -212,6 +214,14 @@ Widget built for WordPress 2.8's Widget API, so you need at least WP 2.8 to use 
 Template system has changed. Custom templates should be stored in WordPress theme folder.
 
 == Changelog ==
+
+= 0.27.1 =
+
+ * Sets minimum version to WordPress 3.3, since wp_trim_words was introduced in that version. Adds workaround for people using WordPress < 3.3.
+ * Adds Slovak translation by Branco from [WebHostingGeeks.com](http://webhostinggeeks.com/blog/).
+ * Removes Debug PHP warnings.
+ * Checkboxes on Widget save state, i18n for widget.
+ * Adds excerpt size to widget.
 
 = 0.27 =
 
