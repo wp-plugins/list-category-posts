@@ -3,8 +3,10 @@ Contributors: fernandobt
 Donate Link: http://picandocodigo.net/programacion/wordpress/list-category-posts-wordpress-plugin-english/#support
 Tags: list, categories, posts, cms
 Requires at least: 3.3
-Tested up to: 3.5
-Stable tag: 0.30.3
+Tested up to: 3.6.1
+Stable tag: 0.33
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 List Category Posts allows you to list posts from a category into a post/page using the [catlist] shortcode. When you're editing a page or post, directly insert the shortcode in your text and the posts will be listed there. The **basic** usage would be something like this:
@@ -26,6 +28,14 @@ Great to use WordPress as a CMS, and create pages with several categories posts.
 
 Please, read the information on [Other Notes](http://wordpress.org/extend/plugins/list-category-posts/other_notes/) and [Changelog](http://wordpress.org/extend/plugins/list-category-posts/changelog/) to be aware of new functionality, and improvements to the plugin.
 
+**Videos**
+
+Some users have made videos on how to use the plugin, (thank you! you people are awesome!). Check them out here:
+
+ * [Manage WordPress Content with List Category Posts Plugin](http://www.youtube.com/watch?v=kBy_qoGKpdo)
+ * [Build A Start Here Page with List Category Posts](http://www.youtube.com/watch?v=9YJpZfHIwIY)
+ * [WordPress: How to List Category Posts on a Page](http://www.youtube.com/watch?v=Zfnzk4IWPNA)
+
 **Support the plugin**
 
 If you've found the plugin useful, consider making a [donation via PayPal](http://picandocodigo.net/programacion/wordpress/list-category-posts-wordpress-plugin-english/ "Donate via PayPal") or visit my Amazon Wishlist for [books](http://www.amazon.com/gp/registry/wishlist/2HU1JYOF7DX5Q/ref=wl_web "Amazon Wishlist") or [comic books](http://www.amazon.com/registry/wishlist/1LVYAOJAZQOI0/ref=cm_wl_rlist_go_o) :).
@@ -45,7 +55,6 @@ I've moved the development to [GitHub](https://github.com/picandocodigo/List-Cat
 ==Other notes==
 
 ==INSTRUCTIONS on how to use the plugin==
-
 
 ==Selecting the category==
 The plugin can figure out the category from which you want to list posts in several ways. **You should use only one of these methods** since these are all mutually exclusive, weird results are expected when using more than one:
@@ -119,6 +128,8 @@ When using List Category Posts whithout a category id, name or slug, it will pos
 * **content** - Show the full content of the post. Default is 'no'. Ex: [catlist content=yes]
 
 * **catlink** - Show the title of the category with a link to the category. Use the **catlink_string** option to change the link text. Default is 'no'. Ex: [catlist catlink=yes]. The way it's programmed, it should only display the title for the first category you chose, and include the posts from all of the categories. I thought of this parameter mostly for using several shortcodes on one page or post, so that each group of posts would have the title of that group's category. If you need to display several titles with posts, you should use one [catlist] shortcode for each category you want to display.
+
+* **category_count** -  Shows the posts count in that category, only works when using the **catlink** option: `[catlist name=nintendo catlink=yes category_count=yes]`
 
 * **comments** - Show comments count for each post. Default is 'no'. Ex: [catlist comments=yes].
 
@@ -244,6 +255,20 @@ Widget built for WordPress 2.8's Widget API, so you need at least WP 2.8 to use 
 Template system has changed. Custom templates should be stored in WordPress theme folder.
 
 == Changelog ==
+
+= 0.33 =
+ * Fixes bug with thumbnail size on Widget.
+ * Adds feature to make widget title a link to the category. Use 'catlink' as the value for the widget's title to make it a link to the category (based on https://github.com/picandocodigo/List-Category-Posts/pull/51/).
+ * Fixes morelink styiling with CSS class and tag.
+ * Adds morelink to templates (based on https://github.com/picandocodigo/List-Category-Posts/pull/48/)
+ * Fixes tag and CSS class for "catlink" too: http://wordpress.org/support/topic/cat_link-tag-does-not-seem-to-be-working
+
+= 0.32 =
+ * Add category count parameter to show the number of posts in a category next to its title. Only works when using the **catlink** option: `[catlist name=nintendo catlink=yes category_count=yes]` - http://wordpress.org/support/topic/count-feature
+
+= 0.31 =
+ * Pull request from @cfoellmann, adds testing environment and Travis CI integration. Awesomeness.
+ * When searching for a thumbnail, if there's no thumbnail on the post but there's a YouTube video, display the YouTube video thumbnail. (wordpress.org/support/topic/youtube-thumbnail)
 
 = 0.30.3 =
  * Bugfix release, fixes current category for post/page

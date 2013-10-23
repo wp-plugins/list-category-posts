@@ -16,6 +16,7 @@ class CatList{
    */
   public function __construct($atts) {
     $this->params = $atts;
+
     //Get the category posts:
     $this->get_lcp_category();
     $this->set_lcp_parameters();
@@ -210,9 +211,30 @@ class CatList{
       $cat_title = get_cat_name($this->lcp_category_id);
 
       return '<a href="' . $cat_link . '" title="' . $cat_title . '">' .
-        ($this->params['catlink_string'] !== '' ? $this->params['catlink_string'] : $cat_title) . '</a>';
+        ($this->lcp_not_empty('catlink_string') ? $this->params['catlink_string'] : $cat_title) . $this->get_category_count() .  '</a>';
     else:
       return null;
+    endif;
+  }
+  
+  /**
+   * Load morelink name and link to the category:
+   */
+  public function get_morelink(){
+    if (!empty($this->params['morelink'])) :
+      $href = 'href="' . get_category_link($this->lcp_category_id) . '"';
+      $readmore = ($this->params['morelink'] !== '' ? $this->params['morelink'] : 'More posts');
+      return '<a ' . $href . ' >' . $readmore . '</a>';
+    else:
+      return null;
+    endif;
+  }
+
+
+
+  public function get_category_count(){
+    if($this->lcp_not_empty('category_count') && $this->params['category_count'] == 'yes'):
+      return ' (' . get_category($this->lcp_category_id)->category_count . ')';
     endif;
   }
 
@@ -344,15 +366,13 @@ class CatList{
    *
    */
   public function get_thumbnail($single, $lcp_thumb_class = null){
+    $lcp_thumbnail = null;
+
     if ($this->params['thumbnail']=='yes'):
       $lcp_thumbnail = '';
       if ( has_post_thumbnail($single->ID) ):
-
-        if ( in_array( $this->params['thumbnail_size'],
-                       array('thumbnail', 'medium', 'large', 'full')
-             )):
+        if ( in_array( $this->params['thumbnail_size'],array('thumbnail', 'medium', 'large', 'full') )):
           $lcp_thumb_size = $this->params['thumbnail_size'];
-
         elseif ($this->params['thumbnail_size']):
           $lcp_thumb_size = explode(",", $this->params['thumbnail_size']);
         else:
@@ -367,11 +387,26 @@ class CatList{
           ($lcp_thumb_class != null) ? array('class' => $lcp_thumb_class ) : null
         );
         $lcp_thumbnail .= '</a>';
-      endif;
-      return $lcp_thumbnail;
 
-    else:
-      return null;
+      # Check for a YouTube video thumbnail
+      elseif (
+              preg_match("/([a-zA-Z0-9\-\_]+\.|)youtube\.com\/watch(\?v\=|\/v\/)([a-zA-Z0-9\-\_]{11})([^<\s]*)/", $single->post_content, $matches)
+              ||
+              preg_match("/([a-zA-Z0-9\-\_]+\.|)youtube\.com\/(v\/)([a-zA-Z0-9\-\_]{11})([^<\s]*)/", $single->post_content, $matches)
+              ):
+        $youtubeurl = $matches[0];
+
+        if ($youtubeurl):
+          $imageurl = "http://i.ytimg.com/vi/{$matches[3]}/1.jpg";
+        endif;
+
+        $lcp_thumbnail = '<a href="' . get_permalink($single->ID).'">' .
+          '<img src="' . $imageurl .
+          ( ($lcp_thumb_class != null) ? 'class="' . $lcp_thumb_class .'"' : null ) .
+          '" alt="' . $single->title . '" />';
+        $lcp_thumbnail .= '</a>';
+      endif;
     endif;
+    return $lcp_thumbnail;
   }
 }

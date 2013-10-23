@@ -56,7 +56,19 @@ class CatListDisplayer {
   }
 
   private function build_output($tag){
-    $this->lcp_output .= $this->get_category_link('strong');
+    // More link
+    if (!empty($this->params['catlink_tag'])):
+      if (!empty($this->params['catlink_class'])):
+        $this->lcp_output .= $this->get_category_link(
+                                   $this->params['catlink_tag'],
+                                   $this->params['catlink_class']);
+      else:
+        $this->lcp_output .= $this->get_category_link($this->params['catlink_tag']);
+      endif;
+    else:
+      $this->lcp_output .= $this->get_category_link("strong");
+    endif;
+
     $this->lcp_output .= '<' . $tag;
 
     //Give a class to wrapper tag
@@ -76,15 +88,19 @@ class CatListDisplayer {
     //Close wrapper tag
     $this->lcp_output .= '</' . $tag . '>';
 
-    if (!empty($this->params['morelink'])) :
-      $href = 'href="' . get_category_link($this->catlist->get_category_id()) . '"';
-      $class = "";
-      if (!empty($this->params['morelink_class'])) :
-        $class = 'class="' . $this->params['morelink_class'] . '" ';
+    // More link
+    if (!empty($this->params['morelink_tag'])):
+      if (!empty($this->params['morelink_class'])):
+        $this->lcp_output .= $this->get_morelink(
+                                   $this->params['morelink_tag'],
+                                   $this->params['morelink_class']);
+      else:
+        $this->lcp_output .= $this->get_morelink($this->params['morelink_tag']);
       endif;
-      $readmore = $this->params['morelink'];
-      $this->lcp_output .= '<a ' . $href . ' ' . $class . ' >' . $readmore . '</a>';
+    else:
+      $this->lcp_output .= $this->get_morelink();
     endif;
+
   }
 
   /**
@@ -113,7 +129,7 @@ class CatListDisplayer {
       $lcp_display_output .= $this->get_post_title($single) . ' ';
     endif;
 
-    // Coments count
+    // Comments count
     if (!empty($this->params['comments_tag'])):
       if (!empty($this->params['comments_class'])):
         $lcp_display_output .= $this->get_comments($single,
@@ -254,6 +270,15 @@ class CatListDisplayer {
   private function get_category_link($tag = null, $css_class = null){
     $info = $this->catlist->get_category_link();
     return $this->assign_style($info, $tag, $css_class);
+  }
+  
+  private function get_morelink($tag = null, $css_class = null){
+    $info = $this->catlist->get_morelink();
+    return $this->assign_style($info, $tag, $css_class);
+  }
+
+  private function get_category_count(){
+    return $this->catlist->get_category_count();
   }
 
   /**
