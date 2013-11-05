@@ -115,7 +115,6 @@ class CatList{
     elseif ( !empty($this->params['tags']) ):
       $args['tag'] = $this->params['tags'];
     endif;
-    var_dump($args);
     $this->lcp_categories_posts = get_posts($args);
   }
 
