@@ -3,7 +3,7 @@
     Plugin Name: List category posts
     Plugin URI: https://github.com/picandocodigo/List-Category-Posts
     Description: List Category Posts allows you to list posts from a category into a post/page using the [catlist] shortcode. This shortcode accepts a category name or id, the order in which you want the posts to display, and the number of posts to display. You can use [catlist] as many times as needed with different arguments. Usage: [catlist argument1=value1 argument2=value2].
-    Version: 0.27
+    Version: 0.34
     Author: Fernando Briano
     Author URI: http://picandocodigo.net/
 
@@ -11,7 +11,7 @@
     Domain Path:   /languages/
   */
 
-  /* Copyright 2008-2012  Fernando Briano  (email : fernando@picandocodigo.net)
+  /* Copyright 2008-2013  Fernando Briano  (email : fernando@picandocodigo.net)
 
      This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ class ListCategoryPosts{
    * @param $atts
    * @param $content
    */
-  function catlist_func($atts, $content = null) {
+  static function catlist_func($atts, $content = null) {
     $atts = shortcode_atts(array(
                              'id' => '0',
                              'name' => '',
@@ -56,12 +56,15 @@ class ListCategoryPosts{
                              'template' => 'default',
                              'excerpt' => 'no',
                              'excerpt_size' => '55',
+                             'excerpt_strip' => 'yes',
+                             'excerpt_overwrite' => 'no',
                              'excerpt_tag' =>'',
                              'excerpt_class' =>'',
                              'exclude' => '0',
                              'excludeposts' => '0',
                              'offset' => '0',
                              'tags' => '',
+                             'exclude_tags' => '',
                              'content' => 'no',
                              'content_tag' => '',
                              'content_class' => '',
@@ -86,8 +89,12 @@ class ListCategoryPosts{
                              'customfield_display' =>'',
                              'taxonomy' => '',
                              'categorypage' => '',
+                             'category_count' => '',
                              'morelink' => '',
                              'morelink_class' => '',
+                             'morelink_tag' => '',
+                             'posts_morelink' => '',
+                             'posts_morelink_class' => '',
                              'year' => '',
                              'monthnum' => '',
                              'search' => ''

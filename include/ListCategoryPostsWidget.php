@@ -25,14 +25,12 @@ class ListCategoryPostsWidget extends WP_Widget{
     $dateformat = ($instance['dateformat']) ? $instance['dateformat'] : get_option('date_format');
     $showdate = ($instance['show_date'] == 'on') ? 'yes' : 'no';
     $showexcerpt = ($instance['show_excerpt'] == 'on') ? 'yes' : 'no';
+    $excerptsize = (empty($instance['excerpt_size']) ? 55 : $instance['excerpt_size']);
     $showauthor = ($instance['show_author'] == 'on') ? 'yes' : 'no';
     $showcatlink = ($instance['show_catlink'] == 'on') ? 'yes' : 'no';
     $thumbnail = ($instance['thumbnail'] == 'on') ? 'yes' : 'no';
     $thumbnail_size = ($instance['thumbnail_size']) ? $instance['thumbnail_size'] : 'thumbnail';
     $morelink = empty($instance['morelink']) ? ' ' : $instance['morelink'];
-
-    echo $before_widget;
-    echo $before_title . $title . $after_title;
 
     $atts = array(
       'id' => $category_id,
@@ -44,6 +42,7 @@ class ListCategoryPostsWidget extends WP_Widget{
       'dateformat' => $dateformat,
       'template' => 'default',
       'excerpt' => $showexcerpt,
+      'excerpt_size' => $excerptsize,
       'exclude' => $exclude,
       'excludeposts' => $excludeposts,
       'offset' => $offset,
@@ -52,6 +51,15 @@ class ListCategoryPostsWidget extends WP_Widget{
       'thumbnail_size' => $thumbnail_size,
       'morelink' => $morelink
     );
+
+    echo $before_widget;
+
+    if($title == 'catlink'){
+      //if the user has setup 'catlink' as the title, replace it with the category link:
+      $lcp_category = get_category($category_id);
+      $title = '<a href="' . get_category_link($lcp_category->cat_ID) . '">' . $lcp_category->name . '</a>';
+    }
+    echo $before_title . $title . $after_title;
 
     $catlist_displayer = new CatListDisplayer($atts);
     echo  $catlist_displayer->display();
@@ -72,6 +80,7 @@ class ListCategoryPostsWidget extends WP_Widget{
     $instance['dateformat'] = strip_tags($new_instance['dateformat']);
     $instance['show_date'] = strip_tags($new_instance['show_date']);
     $instance['show_excerpt'] = strip_tags($new_instance['show_excerpt']);
+    $instance['excerpt_size'] = strip_tags($new_instance['excerpt_size']);
     $instance['show_author'] = strip_tags($new_instance['show_author']);
     $instance['show_catlink'] = strip_tags($new_instance['show_catlink']);
     $instance['show_catlink'] = strip_tags($new_instance['show_catlink']);
