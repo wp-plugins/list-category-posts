@@ -56,7 +56,9 @@ class CatList{
     endif;
 
     if($this->lcp_not_empty('post_status')):
-      $args['post_status'] = $this->params['post_status'];
+      $args['post_status'] = array(
+                                   $this->params['post_status']
+                                   );
     endif;
 
     if($this->lcp_not_empty('post_parent')):
@@ -87,7 +89,11 @@ class CatList{
 
     //Get private posts
     if(is_user_logged_in()):
-      $args['post_status'] = array('publish','private');
+      if ( !empty($args['post_status']) ):
+        $args['post_status'] = array_merge($args['post_status'], array('private'));
+      else:
+        $args['post_status'] = array('private', 'publish');
+      endif;
     endif;
 
     if ( $this->lcp_not_empty('exclude_tags') ):
@@ -109,7 +115,7 @@ class CatList{
     elseif ( !empty($this->params['tags']) ):
       $args['tag'] = $this->params['tags'];
     endif;
-
+    var_dump($args);
     $this->lcp_categories_posts = get_posts($args);
   }
 
@@ -161,6 +167,15 @@ class CatList{
         $this->lcp_category_id = $this->get_category_id_by_name($this->params['name']);
       endif;
     elseif ( isset($this->params['id']) && $this->params['id'] != '0' ):
+      $lcp_id = $this->params['id'];
+
+      if (preg_match('/\+/', $lcp_id)):
+        // Probably there's a "category and not" for cases of 2+3-1
+        $this->lcp_category_id = explode(",", str_replace("+", ",", str_replace("-", ",-", $lcp_id) ) );
+      else:
+        $this->lcp_category_id = $lcp_id;
+      endif;
+
       if (preg_match('/\+/', $this->params['id'])):
         $this->lcp_category_id = explode("+", $this->params['id']);
       else:
@@ -168,6 +183,7 @@ class CatList{
       endif;
     endif;
   }
+
 
   public function lcp_get_current_category(){
     $category = get_category( get_query_var( 'category' ) );
