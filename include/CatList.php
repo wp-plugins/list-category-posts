@@ -56,7 +56,9 @@ class CatList{
     endif;
 
     if($this->lcp_not_empty('post_status')):
-      $args['post_status'] = $this->params['post_status'];
+      $args['post_status'] = array(
+                                   $this->params['post_status']
+                                   );
     endif;
 
     if($this->lcp_not_empty('post_parent')):
@@ -87,7 +89,11 @@ class CatList{
 
     //Get private posts
     if(is_user_logged_in()):
-      $args['post_status'] = array('publish','private');
+      if ( !empty($args['post_status']) ):
+        $args['post_status'] = array_merge($args['post_status'], array('private'));
+      else:
+        $args['post_status'] = array('private', 'publish');
+      endif;
     endif;
 
     if ( $this->lcp_not_empty('exclude_tags') ):
@@ -108,6 +114,11 @@ class CatList{
                                  ));
     elseif ( !empty($this->params['tags']) ):
       $args['tag'] = $this->params['tags'];
+    endif;
+
+    if ( $this->lcp_not_empty('customfield_orderby') ):
+      $args['orderby'] = 'meta_value';
+      $args['meta_key'] = $this->params['customfield_orderby'];
     endif;
 
     $this->lcp_categories_posts = get_posts($args);
