@@ -4,7 +4,7 @@ Donate Link: http://picandocodigo.net/programacion/wordpress/list-category-posts
 Tags: list, categories, posts, cms
 Requires at least: 3.3
 Tested up to: 3.7.1
-Stable tag: 0.35
+Stable tag: 0.36
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -72,15 +72,14 @@ When using List Category Posts whithout a category id, name or slug, it will pos
 
 * **include** posts from several categories with **AND** relationship, posts that belong to all of the listed categories (note this does not show posts from any children of these categories): `[catlist id=17+25+2]` - `[catlist name=sega+nintendo]`.
 * **include** posts from several categories with **OR** relationship, posts that belong to either one of the listed categories: `[catlist id=17,24,32]` - `[catlist name=sega,nintendo]`.
-* **exclude** a category with the minus sign (-): `[catlist id=11,-32,16]`.
-
+* **exclude** a category with the minus sign (-): `[catlist id=11,-32,16]`, `[catlist id=1+2-3]`. **Important**: When using the *and* relationship, the order must be categories you want to include first, and exclude after. So `[catlist id=1+2-3]` will work, but `[catlist id=1+2-3+4]` won't.
 
 
 ==Other parameters==
 
 * **tags** - Tag support, you can display posts from a certain tag.
 
-* **exclude_tags** - Exclude posts from one or more tags: `[catlist tag="videogames" exclude_tags="sega,sony"]`
+* **exclude_tags** - Exclude posts from one or more tags: `[catlist tags="videogames" exclude_tags="sega,sony"]`
 
 * **orderby** - To customize the order. Valid values are:
   * **author** - Sort by the numeric author IDs.
@@ -169,6 +168,8 @@ When using List Category Posts whithout a category id, name or slug, it will pos
 
 * **posts_morelink** - Include a "read more" link after each post. It receives a string of characters as a parameter which will be used as the text of the link. Example: `[catlist id=38 posts_morelink="Read more about this post"]`
 
+* **link_target** - Select the `target` attribute for links to posts (target=_blank, _self, _parent, _top, *framename*). Example: `[catlink id=3 link_target=_blank]` will create: `<a href="http://localhost/wordpress/?p=45" title="Test post" target="_blank">Test post</a>`
+
 == HTML & CSS Customization ==
 
 You can customize what HTML tags different elements will be sorrounded with and a CSS class for this element, or just a CSS class which will wrap the element with a `span` tag.
@@ -209,7 +210,7 @@ You can have as many different templates as you want, and use them in different 
 * **Instructions** on how to use the plugin: http://wordpress.org/extend/plugins/list-category-posts/other_notes/ - **Read it**.
 * **Template system** how to customize the way the posts are shown: http://wordpress.org/extend/plugins/list-category-posts/other_notes/. I am aware the Template System is not really friendly right now, I'll work on this whenever I get the time to work on the plugin for a while.
 * **New feature requests, Bug fixes, enhancements** - You can post them on [GitHub Issues](https://github.com/picandocodigo/List-Category-Posts/issues).
-* **Questions** If you have any usage questions, go to [WordPress Answers](http://wordpress.stackexchange.com/) for support. It's a great place with a large community of WordPress users and developers. Just [ask your question](http://wordpress.stackexchange.com/questions/ask?tags=plugin-list-category-posts) using the 'plugin-list-category-post' tag.
+* **Questions** For questions either use the [Support forum](http://wordpress.org/support/plugin/list-category-posts) or [WordPress Answers](http://wordpress.stackexchange.com/). It's a great place with a large community of WordPress users and developers. Just [ask your question](http://wordpress.stackexchange.com/questions/ask?tags=plugin-list-category-posts) using the 'plugin-list-category-post' tag.
 
 
 * **FAQ**
@@ -272,6 +273,11 @@ Widget built for WordPress 2.8's Widget API, so you need at least WP 2.8 to use 
 Template system has changed. Custom templates should be stored in WordPress theme folder.
 
 == Changelog ==
+
+= 0.36 =
+
+ * Adds option for "target=_blank" for post links.
+ * Adds option to exclude category when using the *and* relationship: `[catlist id=1+2-3]` will include posts from categories 1 and 2 but not 3.
 
 = 0.35 =
  * Updated Turkish translation, thanks again [Hakan Er](http://hakanertr.wordpress.com/)!
