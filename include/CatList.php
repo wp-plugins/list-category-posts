@@ -9,6 +9,7 @@ class CatList{
   private $params = array();
   private $lcp_category_id = 0;
   private $category_param;
+  private $exclude;
 
   /**
    * Constructor gets the shortcode attributes as parameter
@@ -56,7 +57,9 @@ class CatList{
     endif;
 
     if($this->lcp_not_empty('post_status')):
-      $args['post_status'] = $this->params['post_status'];
+      $args['post_status'] = array(
+                                   $this->params['post_status']
+                                   );
     endif;
 
     if($this->lcp_not_empty('post_parent')):
@@ -87,7 +90,11 @@ class CatList{
 
     //Get private posts
     if(is_user_logged_in()):
-      $args['post_status'] = array('publish','private');
+      if ( !empty($args['post_status']) ):
+        $args['post_status'] = array_merge($args['post_status'], array('private'));
+      else:
+        $args['post_status'] = array('private', 'publish');
+      endif;
     endif;
 
     if ( $this->lcp_not_empty('exclude_tags') ):
@@ -108,6 +115,15 @@ class CatList{
                                  ));
     elseif ( !empty($this->params['tags']) ):
       $args['tag'] = $this->params['tags'];
+    endif;
+
+    if ( !empty($this->exclude)):
+      $args['category__not_in'] = array($this->exclude);
+    endif;
+
+    if ( $this->lcp_not_empty('customfield_orderby') ):
+      $args['orderby'] = 'meta_value';
+      $args['meta_key'] = $this->params['customfield_orderby'];
     endif;
 
     $this->lcp_categories_posts = get_posts($args);
@@ -140,10 +156,12 @@ class CatList{
       if (preg_match('/\+/', $this->params['name'])):
         $categories = array();
         $cat_array = explode("+", $this->params['name']);
+
         foreach ($cat_array as $category) :
           $id = $this->get_category_id_by_name($category);
           $categories[] = $id;
         endforeach;
+
         $this->lcp_category_id = $categories;
 
       elseif (preg_match('/,/', $this->params['name'])):
@@ -162,6 +180,9 @@ class CatList{
       endif;
     elseif ( isset($this->params['id']) && $this->params['id'] != '0' ):
       if (preg_match('/\+/', $this->params['id'])):
+        if ( preg_match('/(-[0-9]+)+/', $this->params['id'], $matches) ):
+          $this->exclude = implode(',', explode("-", ltrim($matches[0], '-') ));
+        endif;
         $this->lcp_category_id = explode("+", $this->params['id']);
       else:
         $this->lcp_category_id = $this->params['id'];
