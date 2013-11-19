@@ -111,10 +111,12 @@ class CatListDisplayer {
    */
   private function lcp_build_post($single, $tag){
     global $post;
+
     $class ='';
     if ( $post->ID == $single->ID ):
       $class = " class = current ";
     endif;
+
     $lcp_display_output = '<'. $tag . $class . '>';
 
     if (!empty($this->params['title_tag'])):
@@ -143,14 +145,10 @@ class CatListDisplayer {
     endif;
 
     // Date
-    if (!empty($this->params['date_tag'])):
-      if (!empty($this->params['date_class'])):
-        $lcp_display_output .= $this->get_date($single,
-                                   $this->params['date_tag'],
-                                   $this->params['date_class']);
-      else:
-        $lcp_display_output .= $this->get_date($single, $this->params['date_tag']);
-      endif;
+    if (!empty($this->params['date_tag']) || !empty($this->params['date_class'])):
+      $lcp_display_output .= $this->get_date($single,
+                                             $this->params['date_tag'],
+                                             $this->params['date_class']);
     else:
       $lcp_display_output .= $this->get_date($single);
     endif;
@@ -262,8 +260,12 @@ class CatListDisplayer {
 
   private function get_post_title($single, $tag = null, $css_class = null){
     $info = '<a href="' . get_permalink($single->ID) .
-      '" title="'. $single->post_title . '">' .
-      apply_filters('the_title', $single->post_title, $single->ID) . '</a>';
+      '" title="' . $single->post_title. '"';
+    if (!empty($this->params['link_target'])):
+      $info .= ' target="' . $this->params['link_target'] . '" ';
+    endif;
+    $info .= '>' . apply_filters('the_title', $single->post_title, $single->ID) . '</a>';
+
     return $this->assign_style($info, $tag, $css_class);
   }
 
@@ -291,8 +293,10 @@ class CatListDisplayer {
    * @return string
    */
   private function assign_style($info, $tag = null, $css_class = null){
-    if (!empty($info)):
-      if (empty($tag)):
+     if (!empty($info)):
+      if (empty($tag) && !empty($css_class)):
+        $tag = "span";
+      elseif (empty($tag)):
         return $info;
       elseif (!empty($tag) && empty($css_class)) :
         return '<' . $tag . '>' . $info . '</' . $tag . '>';
