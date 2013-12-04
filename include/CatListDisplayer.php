@@ -75,8 +75,16 @@ class CatListDisplayer {
     if (isset($this->params['class'])):
       $this->lcp_output .= ' class="' . $this->params['class'] . '"';
     endif;
+
+    //Give id to wrapper tag
+    if (isset($this->params['instance'])){
+      $this->lcp_output .= ' id=lcp_instance_' . $this->params['instance'];
+    }
+
     $this->lcp_output .= '>';
     $inner_tag = ($tag == 'ul') ? 'li' : 'p';
+
+
 
     //Posts loop
     foreach ($this->catlist->get_categories_posts() as $single) :
@@ -101,6 +109,53 @@ class CatListDisplayer {
       $this->lcp_output .= $this->get_morelink();
     endif;
 
+    if (!empty($this->params['pagination']) && $this->params['pagination'] == "yes"):
+      $lcp_paginator = '';
+      $pages_count = ceil (
+                           $this->catlist->get_posts_count() / $this->catlist->get_number_posts()
+                           );
+      for($i = 1; $i <= $pages_count; $i++){
+        $lcp_paginator .=  $this->lcp_page_link($i, true);
+      }
+
+      $this->lcp_output .= "<ul class='lcp_paginator'>";
+
+      // Add "Previous" link
+      if ($this->catlist->get_page() > 1){
+        $this->lcp_output .= $this->lcp_page_link( intval($this->catlist->get_page()) - 1, "<<" );
+      }
+
+      $this->lcp_output .= $lcp_paginator;
+      // Add "Next" link
+      if ($this->catlist->get_page() < $pages_count){
+        $this->lcp_output .= $this->lcp_page_link( intval($this->catlist->get_page()) + 1, ">>");
+      }
+      $this->lcp_output .= "</ul>";
+
+    endif;
+  }
+
+  private function lcp_page_link($page, $char = nil){
+    $current_page = $this->catlist->get_page();
+    $link = '';
+
+    if ($page == $current_page){
+      $link = "<li>$current_page</li>";
+    } else {
+      $amp = ( strpos($_SERVER["REQUEST_URI"], "?") ) ? "&" : "";
+      $pattern = "/[&|?]?lcp_page" . preg_quote($this->catlist->get_instance()) . "=([0-9]+)/";
+      $query = preg_replace($pattern, '', $_SERVER['QUERY_STRING']);
+
+      $url = strtok($_SERVER["REQUEST_URI"],'?');
+
+      $page_link = "http://$_SERVER[HTTP_HOST]$url?$query" .
+        $amp . "lcp_page" . $this->catlist->get_instance() . "=". $page .
+        "#lcp_instance_" . $this->catlist->get_instance();
+      $link .=  "<li><a href='$page_link' title='$page'>";
+      ($char != nil) ? ($link .= $char) : ($link .= $page);
+      $link .= "</a></li>";
+    }
+    return $link;
   }
 
   /**
