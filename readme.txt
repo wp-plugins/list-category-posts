@@ -4,7 +4,7 @@ Donate Link: http://picandocodigo.net/programacion/wordpress/list-category-posts
 Tags: list, categories, posts, cms
 Requires at least: 3.3
 Tested up to: 3.7.1
-Stable tag: 0.37
+Stable tag: 0.38
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -74,6 +74,35 @@ When using List Category Posts whithout a category id, name or slug, it will pos
 * **include** posts from several categories with **OR** relationship, posts that belong to any of the listed categories: `[catlist id=17,24,32]` - `[catlist name=sega,nintendo]`.
 * **exclude** a category with the minus sign (-): `[catlist id=11,-32,16]`, `[catlist id=1+2-3]`. **Important**: When using the *and* relationship, the order must be categories you want to include first, and exclude after. So `[catlist id=1+2-3]` will work, but `[catlist id=1+2-3+4]` won't.
 
+==Pagination==
+
+To use pagination, you need to set the following parameters:
+
+* **pagination** set it to yes.
+
+* **numberposts** - Posts per page are set with the `numberposts` parameter.
+
+* **instance** (only necessary when using the shortcode with
+    pagination more than once in the same page/post) - a number or
+    name to identify the instance where you are using pagination.
+    Since you can use the shortcode several times in the same page or
+    post, you need to identify the instance so that you paginate only
+    that instance.
+
+
+Example:
+
+`[catlist id=3 numberposts=5 pagination=yes instance=1]`
+
+`[catlist id=5 numberposts=15 pagination=yes instance=2]`
+
+==Changing the pagination CSS==
+
+If you want to customize the way the pagination is displayed, you can
+copy the `lcp_paginator.css` file from the plugin's directory to your
+theme's directory and customize it. Do not customize the file on the
+plugin's directory since this file will be overwritten every time you
+update the plugin.
 
 ==Other parameters==
 
@@ -106,7 +135,7 @@ When using List Category Posts whithout a category id, name or slug, it will pos
 
 * **numberposts** - Number of posts to return. Set to 0 to use the max number of posts per page. Set to -1 to remove the limit. Default: 5. Ex: `[catlist name=mycategory numberposts=10]`
 
-* **monthnum** and **year** - List posts from a certain year or month. You can use these together or independently. Example: `[catlist year=2015]` will list posts from the year 2015. `[catlist monthnum=8]` will list posts published in August of every year. `[catlist year=2012 month=12]` will list posts from December 2012.
+* **monthnum** and **year** - List posts from a certain year or month. You can use these together or independently. Example: `[catlist year=2015]` will list posts from the year 2015. `[catlist monthnum=8]` will list posts published in August of every year. `[catlist year=2012 monthnum=12]` will list posts from December 2012.
 
 * **search** - List posts that match a search term. `[catlist search="The Cake is a lie"]`
 
@@ -226,6 +255,27 @@ This is true since version 0.18. If you're still using PHP 4 on your webhost, yo
 Please check:
 http://wordpress.stackexchange.com/questions/9338/list-category-posts-plugin-upgrade-fails-fatal-error/9340#9340
 
+**How do I display the Thumbnail next to the title?**
+
+To see the thumbnail next to the title, you can add a class to it like
+this:
+
+`[catlist id=1 thumbnail=yes thumbnail_class=lcp_thumbnail]`
+
+Then in your theme's stylesheet add this code:
+
+`.lcp_thumbnail{
+  float: left;
+}
+
+.lcp_catlist li{
+  clear: both;
+}`
+
+If you want the thumbnail to the right, just change the `float: left`
+attribute to `float: right`.
+
+
 **How to not display the title**
 
 You have to add a CSS class to the title with the `title_class` parameter. Then edit the title_class class in your theme's CSS file. Something like this:
@@ -278,8 +328,16 @@ Template system has changed. Custom templates should be stored in WordPress them
 
 == Changelog ==
 
-= 0.37 =
+= 0.38 =
 
+ * Adds pagination. Check **Pagination** on [Other
+   notes](http://wordpress.org/extend/plugins/list-category-posts/other_notes/)
+   to learn how to use it.
+ * Adds "How to display thumbnails next to title" to the FAQ.
+ * Adds a Vagrant box for developers to be able to start coding with
+   no effort :)
+
+= 0.37 =
  * Supports `more` tag.  If there's a &lt;!--more--&gt; tag in the post, then it will behave just as WordPress does: only show the content previous to the more tag.
  * Fixes YouTube thumbnails: Includes "embed" urls for youtube video
    thumbnails, makes correct img tag when using CSS class.
