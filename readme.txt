@@ -3,8 +3,8 @@ Contributors: fernandobt
 Donate Link: http://picandocodigo.net/programacion/wordpress/list-category-posts-wordpress-plugin-english/#support
 Tags: list, categories, posts, cms
 Requires at least: 3.3
-Tested up to: 3.7.1
-Stable tag: 0.39
+Tested up to: 3.8
+Stable tag: 0.40
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -221,7 +221,7 @@ The parameters are:
 `autor_tag, author_class, catlink_tag, catlink_class, comments_tag, comments_class, date_tag, date_class,
 excerpt_tag, excerpt_class, morelink_class, thumbnail_class, title_tag, title_class, posts_morelink_class`
 
-So for example, let's say you want to wrap the displayed comments count with the p tag and a "lcp_comments" class, you would do:
+So let's say you want to wrap the displayed comments count with the p tag and a "lcp_comments" class, you would do:
 `[catlist id=7 comments=yes comments_tag=p comments_class=lcp_comments]`
 This would produce the following code:
 `<p class="lcp_comments"> (3)</p>`
@@ -236,6 +236,18 @@ Elements without a specified tag, but a specified class, will be wrapped with a 
 Will produce the following:
 `<span class="lcp_date">October 23, 2013</span>`
 
+The only exceptions here are the **title_tag** and **title_class**
+parameters. If you only use the **title_class** parameter, the CSS
+class will be assigned to the `a` tag like this:
+`[catlist id=1 title_class="lcp_title"]`
+Will produce:
+`<a href="http://127.0.0.1/wordpress/?p=38" title="Test" class="lcp_title">Test</a>`
+But if you use both:
+`[catlist numberposts=5 title_class=lcp_title tag=h4]`
+You will get:
+`<h4 class="lcp_title">
+    <a title="Hipchat" href="http://127.0.0.1:8080/wordpress/?p=40"></a>
+</h4>`
 
 == Template System ==
 
@@ -339,6 +351,15 @@ Widget built for WordPress 2.8's Widget API, so you need at least WP 2.8 to use 
 Template system has changed. Custom templates should be stored in WordPress theme folder.
 
 == Changelog ==
+
+= 0.40 =
+
+ * Tested with WordPress 3.8
+ * Removes unnecessary stuff on wp_enqueue_styles
+ * Fixes validation when using quotes in title
+ * Fixes on <!--more--> tag
+ * Fixes on title HTML tag and CSS class. (*See HTML & CSSb
+ Customization* on [Other Notes](http://wordpress.org/plugins/list-category-posts/other_notes/) to check the expected behaviour)
 
 = 0.39 =
 
