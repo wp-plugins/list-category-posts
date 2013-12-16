@@ -48,11 +48,16 @@ class CatList{
 
     //Exclude
     if( $this->lcp_not_empty('excludeposts') ):
-      $args['exclude'] = $this->params['excludeposts'];
+      $exclude = array(
+                       'post__not_in' => explode(",", $this->params['excludeposts'])
+                       );
       if (strpos($args['exclude'], 'this') !== FALSE) :
-        $args['exclude'] = $args['exclude'] .
-          ",". $this->lcp_get_current_post_id();
+        $exclude = array_merge(
+                               $exclude,
+                               array('post__not_in' => $this->lcp_get_current_post_id())
+                               );
       endif;
+      $args = array_merge($args, $exclude);
     endif;
 
     // Post type, status, parent params:
@@ -297,7 +302,7 @@ class CatList{
     if($this->params['customfield_display'] != ''):
       $lcp_customs = '';
 
-      //Doesn't work for many when having spaces:
+      //Doesn't work for many custom fields when having spaces:
       $custom_key = trim($custom_key);
 
       //Create array for many fields:
@@ -311,8 +316,10 @@ class CatList{
         $my_custom_field = $custom_fields[$something];
         if (sizeof($my_custom_field) > 0 ):
           foreach ( $my_custom_field as $key => $value ) :
-            $lcp_customs .= "<div class=\"lcp-customfield\">" .
-              $something. " : " . $value . "</div>";
+            $lcp_customs .= "<div class=\"lcp-customfield\">";
+              if ($this->params['customfield_display_name'] != "no")
+                $lcp_customs .= $something . " : ";
+              $lcp_customs .= $value . "</div>";
           endforeach;
         endif;
       endforeach;
@@ -363,7 +370,7 @@ class CatList{
   public function get_date_to_show($single){
     if ($this->params['date']=='yes'):
       //by Verex, great idea!
-      return  get_the_time($this->params['dateformat'], $single);
+      return get_the_time($this->params['dateformat'], $single);
     else:
       return null;
     endif;

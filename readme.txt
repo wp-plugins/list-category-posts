@@ -4,7 +4,7 @@ Donate Link: http://picandocodigo.net/programacion/wordpress/list-category-posts
 Tags: list, categories, posts, cms
 Requires at least: 3.3
 Tested up to: 3.8
-Stable tag: 0.40.1
+Stable tag: 0.41
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,8 +15,19 @@ List Category Posts allows you to list posts from a category into a post/page us
 
 `[catlist name="news"]`
 
-The shortcode accepts a category name or id, the order in which you want the posts to display, and the number of posts to display. You can also display the post author, date, excerpt, custom field values, even the content! The [catlist] shortcode can be used as many times as needed with different arguments on each post/page. You can add a lot more parameters according to what and how you want to show your post's list:
+The shortcode accepts a category name or id, the order in which you
+want the posts to display, and the number of posts to display. You can
+also display the post author, date, excerpt, custom field values, even
+the content!
+
+The [catlist] shortcode can be used as many times as needed with
+different arguments on each post/page. You can add a lot more
+parameters according to what and how you want to show your post's
+list:
 `[catlist id=1 numberposts=10]`
+
+There's an options page which only has one option to set for the
+plugin at the moment. But new options will be implemented on demand.
 
 **Please read [the instructions](http://wordpress.org/extend/plugins/list-category-posts/other_notes/)** to learn what parameters are available and how to use them.
 
@@ -133,7 +144,11 @@ update the plugin.
   * **ASC** - Ascending (lowest to highest).
   * **DESC** - Descending (highest to lowest). Ex: `[catlist name=mycategory orderby=title order=asc]`
 
-* **numberposts** - Number of posts to return. Set to 0 to use the max number of posts per page. Set to -1 to remove the limit. Default: 5. Ex: `[catlist name=mycategory numberposts=10]`
+* **numberposts** - Number of posts to return. Set to 0 to use the max
+    number of posts per page. Set to -1 to remove the limit.
+    Ex: `[catlist name=mycategory numberposts=10]`
+    You can set the default number of posts globally on the options
+    page on your Dashboard in Settings / List Category Posts.
 
 * **monthnum** and **year** - List posts from a certain year or month. You can use these together or independently. Example: `[catlist year=2015]` will list posts from the year 2015. `[catlist monthnum=8]` will list posts published in August of every year. `[catlist year=2012 monthnum=12]` will list posts from December 2012.
 
@@ -201,7 +216,18 @@ update the plugin.
 
 * **custom fields** - To use custom fields, you must specify two values: customfield_name and customfield_value. Using this only show posts that contain a custom field with this name and value. Both parameters must be defined, or neither will work.
 
-* **customfield_display** - Display custom field(s). You can specify many fields to show, separating them with a coma.
+* **customfield_display** - Display custom field(s). You can specify
+    many fields to show, separating them with a coma. If you want to
+    display just the value and not the name of the custom field, use
+    `customfield_display_name` and set it to no:
+
+* **customfield_display_name** - To use with `customfield_display`.
+    Use it to just print the value of the Custom field and not the
+    name. Example:
+`[catlist numberposts=-1 customfield_display="Mood"
+    customfield_display_name="no"]`
+Will print the value of the Custom Field "Mood" but not the text
+    "Mood: [value]".
 
 * **template** - File name of template from templates directory without extension. Example: For 'template.php' value is only 'template'. Default is 'default', which displays an unordered list (ul html tag) with a CSS class. This class can be passed as a parameter or by default it's: 'lcp_catlist'. You can also use the default 'div' value. This will output a div with the 'lcp_catlist' CSS class (or one you pass as parameter with the class argument). The inner items (posts) will be displayed between p tags.
 
@@ -351,6 +377,15 @@ Widget built for WordPress 2.8's Widget API, so you need at least WP 2.8 to use 
 Template system has changed. Custom templates should be stored in WordPress theme folder.
 
 == Changelog ==
+
+= 0.41 =
+ * Adds options page, to set the default numberposts value globally.
+ * Adds `customfield_display_name` param.
+ * Adds pagination to custom template.
+ * Fixes date display.
+ * Adds conditions to Vagrantfile to boot faster and not repeat work.
+ * Fixes exclude posts, broken when migrating from get_posts to
+ WP_Query.
 
 = 0.40.1 =
 
