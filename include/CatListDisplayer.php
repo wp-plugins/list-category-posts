@@ -88,7 +88,8 @@ class CatListDisplayer {
 
     //Posts loop
     foreach ($this->catlist->get_categories_posts() as $single) :
-      if ( !post_password_required($single) ) :
+      if ( !post_password_required($single) ||
+           ( post_password_required($single) && $this->params['show_protected'] == 'yes' ) ):
         $this->lcp_output .= $this->lcp_build_post($single, $inner_tag);
       endif;
     endforeach;
@@ -218,10 +219,27 @@ class CatListDisplayer {
     endif;
 
 
+    // Custom field display
     if (!empty($this->params['customfield_display'])) :
-      $lcp_display_output .=
-        $this->get_custom_fields($this->params['customfield_display'],
-                                 $single->ID);
+      if (!empty($this->params['customfield_tag'])):
+        if (!empty($this->params['customfield_class'])):
+          $lcp_display_output .= $this->get_custom_fields(
+                                                          $this->params['customfield_display'],
+                                                          $single->ID,
+                                                          $this->params['customfield_tag'],
+                                                          $this->params['customfield_class']);
+        else:
+          $lcp_display_output .= $this->get_custom_fields(
+                                                          $this->params['customfield_display'],
+                                                          $single->ID,
+                                                          $this->params['customfield_tag']);
+        endif;
+      else:
+        $lcp_display_output .= $this->get_custom_fields(
+                                                        $this->params['customfield_display'],
+                                                        $single->ID
+                                                        );
+      endif;
     endif;
 
     $lcp_display_output .= $this->get_thumbnail($single);
@@ -284,6 +302,10 @@ class CatListDisplayer {
 
   private function get_custom_fields($custom_key, $post_id, $tag = null, $css_class = null){
     $info = $this->catlist->get_custom_fields($custom_key, $post_id);
+    if($tag == null)
+      $tag = 'div';
+    if($css_class == null)
+      $css_class = 'lcp_customfield';
     return $this->assign_style($info, $tag, $css_class);
   }
 

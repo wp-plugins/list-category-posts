@@ -4,7 +4,7 @@ Donate Link: http://picandocodigo.net/programacion/wordpress/list-category-posts
 Tags: list, categories, posts, cms
 Requires at least: 3.3
 Tested up to: 3.8
-Stable tag: 0.41.2
+Stable tag: 0.42.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -197,6 +197,8 @@ update the plugin.
   * **trash** - post is in trashbin (available with Version 2.9).
   * **any** - retrieves any status except those from post types with 'exclude_from_search' set to true.
 
+* **show_protected** - Show posts protected by password. By default
+    they are not displayed. Use: `[catlist show_protected=yes]`
 
 * **post_parent** - Show only the children of the post with this ID.
     Default: None.
@@ -219,7 +221,12 @@ update the plugin.
 * **customfield_display** - Display custom field(s). You can specify
     many fields to show, separating them with a coma. If you want to
     display just the value and not the name of the custom field, use
-    `customfield_display_name` and set it to no:
+    `customfield_display_name` and set it to no.
+    By default, the custom fields will show inside a div with a
+    specific class: `<div class="lcp-customfield">`. You can customize
+    this using the customfield_tag and customfield_class parameters to
+    set a different tag (instead of the div) and a specific class
+    (instead of lcp-customfield).
 
 * **customfield_display_name** - To use with `customfield_display`.
     Use it to just print the value of the Custom field and not the
@@ -244,8 +251,10 @@ You can customize what HTML tags different elements will be sorrounded with and 
 The customizable elements (so far) are: author, catlink (category link), comments, date, excerpt, morelink ("Read More" link), thumbnail and title (post title).
 
 The parameters are:
-`autor_tag, author_class, catlink_tag, catlink_class, comments_tag, comments_class, date_tag, date_class,
-excerpt_tag, excerpt_class, morelink_class, thumbnail_class, title_tag, title_class, posts_morelink_class`
+`autor_tag, author_class, catlink_tag, catlink_class, comments_tag,
+comments_class, date_tag, date_class, excerpt_tag, excerpt_class,
+morelink_class, thumbnail_class, title_tag, title_class,
+posts_morelink_class, customfield_tag, customfield_class`
 
 So let's say you want to wrap the displayed comments count with the p tag and a "lcp_comments" class, you would do:
 `[catlist id=7 comments=yes comments_tag=p comments_class=lcp_comments]`
@@ -375,6 +384,11 @@ Widget built for WordPress 2.8's Widget API, so you need at least WP 2.8 to use 
 Template system has changed. Custom templates should be stored in WordPress theme folder.
 
 == Changelog ==
+
+= 0.42 =
+ * Fixes excludeposts=this.
+ * Adds customfield_tag and customfield_class to customize an HTML tag
+ and CSS class for custom fields.
 
 = 0.41.2 =
  * Small bugfix with customfield_display_name (wasn't working now it

@@ -51,10 +51,13 @@ class CatList{
       $exclude = array(
                        'post__not_in' => explode(",", $this->params['excludeposts'])
                        );
-      if (strpos($args['exclude'], 'this') !== FALSE) :
+      if (strpos($this->params['excludeposts'], 'this') > -1) :
         $exclude = array_merge(
                                $exclude,
-                               array('post__not_in' => $this->lcp_get_current_post_id())
+                               array('post__not_in' => array(
+                                                             $this->lcp_get_current_post_id()
+                                                             )
+                                     )
                                );
       endif;
       $args = array_merge($args, $exclude);
@@ -312,22 +315,18 @@ class CatList{
       $custom_fields = get_post_custom($post_id);
 
       //Loop on custom fields and if there's a value, add it:
-      foreach ($custom_array as $something) :
-        $my_custom_field = $custom_fields[$something];
+      foreach ($custom_array as $user_customfield) :
+        if(isset($custom_fields[$user_customfield])):
+          $my_custom_field = $custom_fields[$user_customfield];
 
-        if (sizeof($my_custom_field) > 0 ):
-
-          foreach ( $my_custom_field as $key => $value ) :
-            $lcp_customs .= "<div class=\"lcp-customfield\">";
-
-            if ($this->params['customfield_display_name'] != "no")
-              $lcp_customs .= $something . " : ";
-
-            $lcp_customs .= $value . "</div>";
-          endforeach;
-
+          if (sizeof($my_custom_field) > 0 ):
+            foreach ( $my_custom_field as $key => $value ) :
+              if ($this->params['customfield_display_name'] != "no")
+                $lcp_customs .= $user_customfield . " : ";
+              $lcp_customs .= $value;
+            endforeach;
+          endif;
         endif;
-
       endforeach;
 
       return $lcp_customs;
