@@ -3,7 +3,7 @@
     Plugin Name: List category posts
     Plugin URI: https://github.com/picandocodigo/List-Category-Posts
     Description: List Category Posts allows you to list posts from a category into a post/page using the [catlist] shortcode. This shortcode accepts a category name or id, the order in which you want the posts to display, and the number of posts to display. You can use [catlist] as many times as needed with different arguments. Usage: [catlist argument1=value1 argument2=value2].
-    Version: 0.36.2
+    Version: 0.42.0
     Author: Fernando Briano
     Author URI: http://picandocodigo.net/
 
@@ -31,6 +31,7 @@
 load_plugin_textdomain( 'list-category-posts', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 
 include 'include/ListCategoryPostsWidget.php';
+include 'include/options.php';
 require_once 'include/CatListDisplayer.php';
 
 class ListCategoryPosts{
@@ -45,7 +46,7 @@ class ListCategoryPosts{
                              'name' => '',
                              'orderby' => 'date',
                              'order' => 'desc',
-                             'numberposts' => '5',
+                             'numberposts' => '',
                              'date' => 'no',
                              'date_tag' => '',
                              'date_class' =>'',
@@ -83,11 +84,16 @@ class ListCategoryPosts{
                              'post_type' => '',
                              'post_status' => '',
                              'post_parent' => '0',
+                             'post_suffix' => '',
+                             'show_protected' => 'no',
                              'class' => 'lcp_catlist',
                              'customfield_name' => '',
                              'customfield_value' =>'',
                              'customfield_display' =>'',
+                             'customfield_display_name' =>'',
                              'customfield_orderby' =>'',
+                             'customfield_tag' => '',
+                             'customfield_class' => '',
                              'taxonomy' => '',
                              'categorypage' => '',
                              'category_count' => '',
@@ -99,16 +105,22 @@ class ListCategoryPosts{
                              'year' => '',
                              'monthnum' => '',
                              'search' => '',
-                             'link_target' => ''
+                             'link_target' => '',
+                             'pagination' => 'no',
+                             'instance' => '0'
                            ), $atts);
-
+    if( $atts['numberposts'] == ''){
+      $atts['numberposts'] = get_option('numberposts');
+    }
+    if( $atts['pagination'] == 'yes'){
+      lcp_pagination_css();
+    }
     $catlist_displayer = new CatListDisplayer($atts);
     return $catlist_displayer->display();
   }
 }
 
 add_shortcode( 'catlist', array('ListCategoryPosts', 'catlist_func') );
-
 
 function lpc_meta($links, $file) {
   $plugin = plugin_basename(__FILE__);
@@ -127,14 +139,22 @@ function lpc_meta($links, $file) {
 
 add_filter( 'plugin_row_meta', 'lpc_meta', 10, 2 );
 
+function lcp_pagination_css(){
+  if ( @file_exists( get_stylesheet_directory() . '/lcp_paginator.css' ) ):
+    $css_file = get_stylesheet_directory_uri() . '/lcp_paginator.css';
+  elseif ( @file_exists( get_template_directory() . '/lcp_paginator.css' ) ):
+    $css_file = get_template_directory_uri() . '/lcp_paginator.css';
+  else:
+    $css_file = WP_PLUGIN_URL . '/' . basename( __DIR__ ) . '/lcp_paginator.css';
+  endif;
+
+  wp_enqueue_style( 'lcp_paginator', $css_file);
+}
+
 /**
  * TO-DO:
-Add Older Posts at bottom of List Category Post page
-  http://wordpress.stackexchange.com/questions/26398/add-older-posts-at-bottom-of-list-category-post-page
-Getting the “more” tag to work with plugin-list-category-post
-  http://wordpress.stackexchange.com/questions/30376/getting-the-more-tag-to-work-with-plugin-list-category-post
-- Fix the code for the WordPress Coding Standards: http://codex.wordpress.org/WordPress_Coding_Standards
-- Pagination
+- Pagination * DONE - Need to add "page" text
+- Add Older Posts at bottom of List Category Post page
 - Simpler template system
 - Exclude child categories
  */

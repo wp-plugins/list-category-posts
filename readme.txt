@@ -3,8 +3,8 @@ Contributors: fernandobt
 Donate Link: http://picandocodigo.net/programacion/wordpress/list-category-posts-wordpress-plugin-english/#support
 Tags: list, categories, posts, cms
 Requires at least: 3.3
-Tested up to: 3.7.1
-Stable tag: 0.36.2
+Tested up to: 3.8
+Stable tag: 0.42.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,8 +15,19 @@ List Category Posts allows you to list posts from a category into a post/page us
 
 `[catlist name="news"]`
 
-The shortcode accepts a category name or id, the order in which you want the posts to display, and the number of posts to display. You can also display the post author, date, excerpt, custom field values, even the content! The [catlist] shortcode can be used as many times as needed with different arguments on each post/page. You can add a lot more parameters according to what and how you want to show your post's list:
+The shortcode accepts a category name or id, the order in which you
+want the posts to display, and the number of posts to display. You can
+also display the post author, date, excerpt, custom field values, even
+the content!
+
+The [catlist] shortcode can be used as many times as needed with
+different arguments on each post/page. You can add a lot more
+parameters according to what and how you want to show your post's
+list:
 `[catlist id=1 numberposts=10]`
+
+There's an options page which only has one option to set for the
+plugin at the moment. But new options will be implemented on demand.
 
 **Please read [the instructions](http://wordpress.org/extend/plugins/list-category-posts/other_notes/)** to learn what parameters are available and how to use them.
 
@@ -74,6 +85,35 @@ When using List Category Posts whithout a category id, name or slug, it will pos
 * **include** posts from several categories with **OR** relationship, posts that belong to any of the listed categories: `[catlist id=17,24,32]` - `[catlist name=sega,nintendo]`.
 * **exclude** a category with the minus sign (-): `[catlist id=11,-32,16]`, `[catlist id=1+2-3]`. **Important**: When using the *and* relationship, the order must be categories you want to include first, and exclude after. So `[catlist id=1+2-3]` will work, but `[catlist id=1+2-3+4]` won't.
 
+==Pagination==
+
+To use pagination, you need to set the following parameters:
+
+* **pagination** set it to yes.
+
+* **numberposts** - Posts per page are set with the `numberposts` parameter.
+
+* **instance** (only necessary when using the shortcode with
+    pagination more than once in the same page/post) - a number or
+    name to identify the instance where you are using pagination.
+    Since you can use the shortcode several times in the same page or
+    post, you need to identify the instance so that you paginate only
+    that instance.
+
+
+Example:
+
+`[catlist id=3 numberposts=5 pagination=yes instance=1]`
+
+`[catlist id=5 numberposts=15 pagination=yes instance=2]`
+
+==Changing the pagination CSS==
+
+If you want to customize the way the pagination is displayed, you can
+copy the `lcp_paginator.css` file from the plugin's directory to your
+theme's directory and customize it. Do not customize the file on the
+plugin's directory since this file will be overwritten every time you
+update the plugin.
 
 ==Other parameters==
 
@@ -104,9 +144,13 @@ When using List Category Posts whithout a category id, name or slug, it will pos
   * **ASC** - Ascending (lowest to highest).
   * **DESC** - Descending (highest to lowest). Ex: `[catlist name=mycategory orderby=title order=asc]`
 
-* **numberposts** - Number of posts to return. Set to 0 to use the max number of posts per page. Set to -1 to remove the limit. Default: 5. Ex: `[catlist name=mycategory numberposts=10]`
+* **numberposts** - Number of posts to return. Set to 0 to use the max
+    number of posts per page. Set to -1 to remove the limit.
+    Ex: `[catlist name=mycategory numberposts=10]`
+    You can set the default number of posts globally on the options
+    page on your Dashboard in Settings / List Category Posts.
 
-* **monthnum** and **year** - List posts from a certain year or month. You can use these together or independently. Example: `[catlist year=2015]` will list posts from the year 2015. `[catlist monthnum=8]` will list posts published in August of every year. `[catlist year=2012 month=12]` will list posts from December 2012.
+* **monthnum** and **year** - List posts from a certain year or month. You can use these together or independently. Example: `[catlist year=2015]` will list posts from the year 2015. `[catlist monthnum=8]` will list posts published in August of every year. `[catlist year=2012 monthnum=12]` will list posts from December 2012.
 
 * **search** - List posts that match a search term. `[catlist search="The Cake is a lie"]`
 
@@ -126,7 +170,7 @@ When using List Category Posts whithout a category id, name or slug, it will pos
 
 * **offset** - You can displace or pass over one or more initial posts which would normally be collected by your query through the use of the offset parameter.
 
-* **content** - Show the full content of the post. Default is 'no'. Ex: `[catlist content=yes]`
+* **content** - Show the full content of the post. If there's a &lt;!--more--&gt; tag in the post, then it will behave just as WordPress does: only show the content previous to the more tag. Default is 'no'. Ex: `[catlist content=yes]`
 
 * **catlink** - Show the title of the category with a link to the category. Use the **catlink_string** option to change the link text. Default is 'no'. Ex: `[catlist catlink=yes]`. The way it's programmed, it should only display the title for the first category you chose, and include the posts from all of the categories. I thought of this parameter mostly for using several shortcodes on one page or post, so that each group of posts would have the title of that group's category. If you need to display several titles with posts, you should use one [catlist] shortcode for each category you want to display.
 
@@ -153,14 +197,44 @@ When using List Category Posts whithout a category id, name or slug, it will pos
   * **trash** - post is in trashbin (available with Version 2.9).
   * **any** - retrieves any status except those from post types with 'exclude_from_search' set to true.
 
+* **show_protected** - Show posts protected by password. By default
+    they are not displayed. Use: `[catlist show_protected=yes]`
 
-* **post_parent** - Show only the children of the post with this ID. Default: None.
+* **post_parent** - Show only the children of the post with this ID.
+    Default: None.
+
+* **post_suffix** - Pass a String to this parameter to display this
+    String after every post title.  
+    Ex: `[catlist numberposts=-1
+    post_suffix="Hello World"]` will create something like:  
+
+    ```<ul class="lcp_catlist" id=lcp_instance_0>
+       <li>
+         <a href="http://127.0.0.1:8080/wordpress/?p=42" title="WordPress">
+           WordPress
+         </a> Hello World </li>```
 
 * **class** - CSS class for the default UL generated by the plugin.
 
 * **custom fields** - To use custom fields, you must specify two values: customfield_name and customfield_value. Using this only show posts that contain a custom field with this name and value. Both parameters must be defined, or neither will work.
 
-* **customfield_display** - Display custom field(s). You can specify many fields to show, separating them with a coma.
+* **customfield_display** - Display custom field(s). You can specify
+    many fields to show, separating them with a coma. If you want to
+    display just the value and not the name of the custom field, use
+    `customfield_display_name` and set it to no.
+    By default, the custom fields will show inside a div with a
+    specific class: `<div class="lcp-customfield">`. You can customize
+    this using the customfield_tag and customfield_class parameters to
+    set a different tag (instead of the div) and a specific class
+    (instead of lcp-customfield).
+
+* **customfield_display_name** - To use with `customfield_display`.
+    Use it to just print the value of the Custom field and not the
+    name. Example:
+`[catlist numberposts=-1 customfield_display="Mood"
+    customfield_display_name="no"]`
+Will print the value of the Custom Field "Mood" but not the text
+    "Mood: [value]".
 
 * **template** - File name of template from templates directory without extension. Example: For 'template.php' value is only 'template'. Default is 'default', which displays an unordered list (ul html tag) with a CSS class. This class can be passed as a parameter or by default it's: 'lcp_catlist'. You can also use the default 'div' value. This will output a div with the 'lcp_catlist' CSS class (or one you pass as parameter with the class argument). The inner items (posts) will be displayed between p tags.
 
@@ -177,10 +251,12 @@ You can customize what HTML tags different elements will be sorrounded with and 
 The customizable elements (so far) are: author, catlink (category link), comments, date, excerpt, morelink ("Read More" link), thumbnail and title (post title).
 
 The parameters are:
-`autor_tag, author_class, catlink_tag, catlink_class, comments_tag, comments_class, date_tag, date_class,
-excerpt_tag, excerpt_class, morelink_class, thumbnail_class, title_tag, title_class, posts_morelink_class`
+`autor_tag, author_class, catlink_tag, catlink_class, comments_tag,
+comments_class, date_tag, date_class, excerpt_tag, excerpt_class,
+morelink_class, thumbnail_class, title_tag, title_class,
+posts_morelink_class, customfield_tag, customfield_class`
 
-So for example, let's say you want to wrap the displayed comments count with the p tag and a "lcp_comments" class, you would do:
+So let's say you want to wrap the displayed comments count with the p tag and a "lcp_comments" class, you would do:
 `[catlist id=7 comments=yes comments_tag=p comments_class=lcp_comments]`
 This would produce the following code:
 `<p class="lcp_comments"> (3)</p>`
@@ -195,6 +271,18 @@ Elements without a specified tag, but a specified class, will be wrapped with a 
 Will produce the following:
 `<span class="lcp_date">October 23, 2013</span>`
 
+The only exceptions here are the **title_tag** and **title_class**
+parameters. If you only use the **title_class** parameter, the CSS
+class will be assigned to the `a` tag like this:
+`[catlist id=1 title_class="lcp_title"]`
+Will produce:
+`<a href="http://127.0.0.1/wordpress/?p=38" title="Test" class="lcp_title">Test</a>`
+But if you use both:
+`[catlist numberposts=5 title_class=lcp_title tag=h4]`
+You will get:
+`<h4 class="lcp_title">
+    <a title="Hipchat" href="http://127.0.0.1:8080/wordpress/?p=40"></a>
+</h4>`
 
 == Template System ==
 
@@ -226,6 +314,27 @@ This is true since version 0.18. If you're still using PHP 4 on your webhost, yo
 Please check:
 http://wordpress.stackexchange.com/questions/9338/list-category-posts-plugin-upgrade-fails-fatal-error/9340#9340
 
+**How do I display the Thumbnail next to the title?**
+
+To see the thumbnail next to the title, you can add a class to it like
+this:
+
+`[catlist id=1 thumbnail=yes thumbnail_class=lcp_thumbnail]`
+
+Then in your theme's stylesheet add this code:
+
+`.lcp_thumbnail{
+  float: left;
+}
+
+.lcp_catlist li{
+  clear: both;
+}`
+
+If you want the thumbnail to the right, just change the `float: left`
+attribute to `float: right`.
+
+
 **How to not display the title**
 
 You have to add a CSS class to the title with the `title_class` parameter. Then edit the title_class class in your theme's CSS file. Something like this:
@@ -243,9 +352,11 @@ And in your theme's CSS:
 
 `<?php echo do_shortcode("[catlist id=3]"); ?>`
 
-**Please do not ask for support when you are having issues with your CSS**. I can't solve every user's CSS problems. Feel free to ask on the forums or WP Answers. But please, **[read the instructions first](http://wordpress.org/extend/plugins/list-category-posts/other_notes/)**.
-
 == Upgrade Notice ==
+
+= 0.37 =
+
+When using `content=yes`, if the post has a more tag, the plugin will only show the content previous to the more tag and not all the content as it used before (it now supports the more tag the same way as WordPress).
 
 = 0.34 =
  * Now the plugin accepts either class or tag or both for styling elements (such as date, author, etc. to display). When just using a tag, it will sorround the element with that tag. When using just a class, it will sorround the element between span tags and the given CSS class. Check [Other notes](http://wordpress.org/extend/plugins/list-category-posts/other_notes/) under **HTML & CSS Customization** for more info.
@@ -273,6 +384,62 @@ Widget built for WordPress 2.8's Widget API, so you need at least WP 2.8 to use 
 Template system has changed. Custom templates should be stored in WordPress theme folder.
 
 == Changelog ==
+
+= 0.42 =
+ * Fixes excludeposts=this.
+ * Adds customfield_tag and customfield_class to customize an HTML tag
+ and CSS class for custom fields.
+
+= 0.41.2 =
+ * Small bugfix with customfield_display_name (wasn't working now it
+ is)
+
+
+= 0.41.1 =
+ * Fixes customfield display name.
+ * Fixes size in getting thumbnails, now checks for all available
+ sizes and defaults ("thumbnail", "full", etc.)
+
+= 0.41.0 =
+ * Adds options page, to set the default numberposts value globally.
+ * Adds `customfield_display_name` param.
+ * Adds pagination to custom template.
+ * Fixes date display.
+ * Adds conditions to Vagrantfile to boot faster and not repeat work.
+ * Fixes exclude posts, broken when migrating from get_posts to
+ WP_Query.
+
+= 0.40.1 =
+
+ * Small fix closing quotes on content when using <!--more-->
+
+= 0.40 =
+
+ * Tested with WordPress 3.8
+ * Removes unnecessary stuff on wp_enqueue_styles
+ * Fixes validation when using quotes in title
+ * Fixes on <!--more--> tag
+ * Fixes on title HTML tag and CSS class. (*See HTML & CSSb
+ Customization* on [Other Notes](http://wordpress.org/plugins/list-category-posts/other_notes/) to check the expected behaviour)
+
+= 0.39 =
+
+ * Adds "post suffix" parameter, to add a String after each post
+   listed. [Source](http://wordpress.org/support/topic/hack-post-title-adding-elements)
+
+= 0.38 =
+
+ * Adds pagination. Check **Pagination** on [Other
+   notes](http://wordpress.org/extend/plugins/list-category-posts/other_notes/)
+   to learn how to use it.
+ * Adds "How to display thumbnails next to title" to the FAQ.
+ * Adds a Vagrant box for developers to be able to start coding with
+   no effort :)
+
+= 0.37 =
+ * Supports `more` tag.  If there's a &lt;!--more--&gt; tag in the post, then it will behave just as WordPress does: only show the content previous to the more tag.
+ * Fixes YouTube thumbnails: Includes "embed" urls for youtube video
+   thumbnails, makes correct img tag when using CSS class.
 
 = 0.36.2 =
 
