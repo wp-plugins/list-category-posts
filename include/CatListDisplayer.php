@@ -87,30 +87,25 @@ class CatListDisplayer {
 
 
     //Posts loop
-    foreach ($this->catlist->get_categories_posts() as $single) :
-      if ( !post_password_required($single) ||
-           ( post_password_required($single) && (
-                                                 isset($this->params['show_protected']) &&
-                                                 $this->params['show_protected'] == 'yes' ) )):
-        $this->lcp_output .= $this->lcp_build_post($single, $inner_tag);
-      endif;
-    endforeach;
+    if ($this->catlist->get_posts_count() > 0) {
+      foreach ($this->catlist->get_categories_posts() as $single) :
+        if ( !post_password_required($single) ||
+             ( post_password_required($single) && (
+                                                   isset($this->params['show_protected']) &&
+                                                   $this->params['show_protected'] == 'yes' ) )):
+          $this->lcp_output .= $this->lcp_build_post($single, $inner_tag);
+        endif;
+      endforeach;
+    } else {
+      $this->lcp_output = $this->params["no_posts_text"];
+    }
 
     //Close wrapper tag
     $this->lcp_output .= '</' . $tag . '>';
 
     // More link
-    if (!empty($this->params['morelink_tag'])):
-      if (!empty($this->params['morelink_class'])):
-        $this->lcp_output .= $this->get_morelink(
-                                   $this->params['morelink_tag'],
-                                   $this->params['morelink_class']);
-      else:
-        $this->lcp_output .= $this->get_morelink($this->params['morelink_tag']);
-      endif;
-    else:
-      $this->lcp_output .= $this->get_morelink();
-    endif;
+    $this->lcp_output .= $this->get_morelink();
+
 
     $this->lcp_output .= $this->get_pagination();
   }
@@ -122,24 +117,27 @@ class CatListDisplayer {
       $pages_count = ceil (
                            $this->catlist->get_posts_count() / $this->catlist->get_number_posts()
                            );
-      for($i = 1; $i <= $pages_count; $i++){
-        $lcp_paginator .=  $this->lcp_page_link($i);
+      if ($pages_count > 1){
+        for($i = 1; $i <= $pages_count; $i++){
+          $lcp_paginator .=  $this->lcp_page_link($i);
+        }
+
+        $pag_output .= "<ul class='lcp_paginator'>";
+
+        // Add "Previous" link
+        if ($this->catlist->get_page() > 1){
+          $pag_output .= $this->lcp_page_link( intval($this->catlist->get_page()) - 1, $this->params['pagination_prev'] );
+        }
+
+        $pag_output .= $lcp_paginator;
+
+        // Add "Next" link
+        if ($this->catlist->get_page() < $pages_count){
+          $pag_output .= $this->lcp_page_link( intval($this->catlist->get_page()) + 1, $this->params['pagination_next']);
+        }
+
+        $pag_output .= "</ul>";
       }
-
-      $pag_output .= "<ul class='lcp_paginator'>";
-
-      // Add "Previous" link
-      if ($this->catlist->get_page() > 1){
-        $pag_output .= $this->lcp_page_link( intval($this->catlist->get_page()) - 1, "<<" );
-      }
-
-      $pag_output .= $lcp_paginator;
-
-      // Add "Next" link
-      if ($this->catlist->get_page() < $pages_count){
-        $pag_output .= $this->lcp_page_link( intval($this->catlist->get_page()) + 1, ">>");
-      }
-      $pag_output .= "</ul>";
     endif;
     return $pag_output;
   }
@@ -373,9 +371,23 @@ class CatListDisplayer {
     return $this->assign_style($info, $tag, $css_class);
   }
 
-  private function get_morelink($tag = null, $css_class = null){
+  private function get_morelink(){
     $info = $this->catlist->get_morelink();
-    return $this->assign_style($info, $tag, $css_class);
+    if ( !empty($this->params['morelink_tag'])){
+      if( !empty($this->params['morelink_class']) ){
+        return "<" . $this->params['morelink_tag'] . " class='" .
+          $this->params['morelink_class'] . "'>" . $info .
+          "</" . $this->params["morelink_tag"] . ">";
+      } else {
+        return "<" . $this->params['morelink_tag'] . ">" .
+          $info . "</" . $this->params["morelink_tag"] . ">";
+      }
+    } else{
+      if ( !empty($this->params['morelink_class']) ){
+        return str_replace("<a", "<a class='" . $this->params['morelink_class'] . "' ", $info);
+      }
+    }
+    return $info;
   }
 
   private function get_category_count(){
