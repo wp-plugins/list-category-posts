@@ -90,6 +90,9 @@ class CatList{
       $args['s'] = $this->params['search'];
     endif;
 
+    if($this->lcp_not_empty('author_posts')):
+      $args['author_name'] = $this->params['author_posts'];
+    endif;
 
     /*
      * Custom fields 'customfield_name' & 'customfield_value'
@@ -116,6 +119,10 @@ class CatList{
         $tag_ids[] = get_term_by('slug', $excluded, 'post_tag')->term_id;
       endforeach;
       $args['tag__not_in'] = $tag_ids;
+    endif;
+
+    if ( $this->lcp_not_empty('currenttags') && $this->params['currenttags'] == "yes" ):
+      $args['tag__in'] = $this->lcp_get_current_tags();
     endif;
 
     // Added custom taxonomy support
@@ -226,6 +233,15 @@ class CatList{
       return $categories[0]->cat_ID;
     endif;
     return $category->cat_ID;
+  }
+
+  public function lcp_get_current_tags(){
+    $tags = get_the_tags();
+    $tag_ids = array();
+    foreach ($tags as $tag_id => $tag) {
+      array_push($tag_ids, $tag_id);
+    }
+    return $tag_ids;
   }
 
   /**
