@@ -85,7 +85,7 @@ class CatListDisplayer {
     }
 
     $this->lcp_output .= '>';
-    $inner_tag = ($tag == ('ul' || 'ol') ) ? 'li' : 'p';
+    $inner_tag = ( ($tag == 'ul') || ($tag == 'ol') ) ? 'li' : 'p';
 
     //Posts loop
     foreach ($this->catlist->get_categories_posts() as $single) :
@@ -337,8 +337,16 @@ class CatListDisplayer {
   }
 
   private function get_post_title($single){
-    $info = '<a href="' . get_permalink($single->ID) .
-      '" title="' . wptexturize($single->post_title) . '"';
+    $info = '<a href="' . get_permalink($single->ID);
+
+    $lcp_post_title = apply_filters('the_title', $single->post_title, $single->ID);
+
+    if ( !empty($this->params['title_limit']) && $this->params['title_limit'] != "0" ):
+      $lcp_post_title = substr($lcp_post_title, 0, intval($this->params['title_limit'])) .
+        "&hellip;";
+    endif;
+
+    $info.=  '" title="' . wptexturize($single->post_title) . '"';
 
     if (!empty($this->params['link_target'])):
       $info .= ' target="' . $this->params['link_target'] . '" ';
@@ -346,11 +354,11 @@ class CatListDisplayer {
 
     if ( !empty($this->params['title_class'] ) &&
          empty($this->params['title_tag']) ):
-      $info .= ' class=' . $this->params['title_class'];
+      $info .= ' class="' . $this->params['title_class'] . '"';
     endif;
 
 
-    $info .= '>' . apply_filters('the_title', $single->post_title, $single->ID) . '</a>';
+    $info .= '>' . $lcp_post_title . '</a>';
 
     if( !empty($this->params['post_suffix']) ):
       $info .= " " . $this->params['post_suffix'];
@@ -359,9 +367,9 @@ class CatListDisplayer {
     if (!empty($this->params['title_tag'])){
       $pre = "<" . $this->params['title_tag'];
       if (!empty($this->params['title_class'])){
-        $pre .= " class=" . $this->params['title_class'];
+        $pre .= ' class="' . $this->params['title_class'];
       }
-      $pre .= ">";
+      $pre .= '">';
       $post = "</" . $this->params['title_tag'] . ">";
       $info = $pre . $info . $post;
     }
