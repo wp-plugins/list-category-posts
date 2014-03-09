@@ -10,6 +10,9 @@ class CatList{
   private $lcp_category_id = 0;
   private $category_param;
   private $exclude;
+  private $page = 1;
+  private $posts_count = 0;
+  private $instance = 0;
 
   /**
    * Constructor gets the shortcode attributes as parameter
@@ -18,6 +21,9 @@ class CatList{
   public function __construct($atts) {
     $this->params = $atts;
 
+    if ($this->lcp_not_empty('instance')){
+      $this->instance = $atts['instance'];
+    }
     //Get the category posts:
     $this->get_lcp_category();
     $this->set_lcp_parameters();
@@ -42,11 +48,19 @@ class CatList{
 
     //Exclude
     if( $this->lcp_not_empty('excludeposts') ):
-      $args['exclude'] = $this->params['excludeposts'];
-      if (strpos($args['exclude'], 'this') !== FALSE) :
-        $args['exclude'] = $args['exclude'] .
-          ",". $this->lcp_get_current_post_id();
+      $exclude = array(
+                       'post__not_in' => explode(",", $this->params['excludeposts'])
+                       );
+      if (strpos($this->params['excludeposts'], 'this') > -1) :
+        $exclude = array_merge(
+                               $exclude,
+                               array('post__not_in' => array(
+                                                             $this->lcp_get_current_post_id()
+                                                             )
+                                     )
+                               );
       endif;
+      $args = array_merge($args, $exclude);
     endif;
 
     // Post type, status, parent params:
@@ -76,6 +90,9 @@ class CatList{
       $args['s'] = $this->params['search'];
     endif;
 
+    if($this->lcp_not_empty('author_posts')):
+      $args['author_name'] = $this->params['author_posts'];
+    endif;
 
     /*
      * Custom fields 'customfield_name' & 'customfield_value'
@@ -104,6 +121,14 @@ class CatList{
       $args['tag__not_in'] = $tag_ids;
     endif;
 
+    // Current tags
+    if ( $this->lcp_not_empty('currenttags') && $this->params['currenttags'] == "yes" ):
+      $tags = $this->lcp_get_current_tags();
+      if ( !empty($tags) ):
+        $args['tag__in'] = $tags;
+      endif;
+    endif;
+
     // Added custom taxonomy support
     if ( $this->lcp_not_empty('taxonomy') && $this->lcp_not_empty('tags') ):
       $args['tax_query'] = array(array(
@@ -124,8 +149,31 @@ class CatList{
       $args['meta_key'] = $this->params['customfield_orderby'];
     endif;
 
-    $this->lcp_categories_posts = get_posts($args);
+    if ( $this->lcp_not_empty('pagination')):
+      if( preg_match('/lcp_page' . preg_quote($this->instance) .
+                     '=([0-9]+)/i', $_SERVER['QUERY_STRING'], $match) ):
+        $this->page = $match[1];
+        $offset = ($this->page - 1) * $this->params['numberposts'];
+        $args = array_merge($args, array('offset' => $offset));
+      endif;
+    endif;
+
+    // for WP_Query compatibility
+    // http://core.trac.wordpress.org/browser/tags/3.7.1/src/wp-includes/post.php#L1686
+    $args['posts_per_page'] = $args['numberposts'];
+
+    remove_all_filters('posts_orderby');
+    $query = new WP_Query;
+    $this->lcp_categories_posts = $query->query($args);
+    $this->posts_count = $query->found_posts;
   }
+
+  /* Should I return posts or show that the tag/category or whatever
+    posts combination that I called has no posts? By default I've
+    always returned the latest posts because that's what the query
+    does when the params are "wrong". But could make for a better user
+    experience if I returned an empty list in certain cases.
+    private function lcp_should_return_posts() */
 
   private function lcp_not_empty($param){
     if ( ( isset($this->params[$param]) ) &&
@@ -198,6 +246,17 @@ class CatList{
     return $category->cat_ID;
   }
 
+  public function lcp_get_current_tags(){
+    $tags = get_the_tags();
+    $tag_ids = array();
+    if( !empty($tags) ){
+      foreach ($tags as $tag_id => $tag) {
+        array_push($tag_ids, $tag_id);
+      }
+    }
+    return $tag_ids;
+  }
+
   /**
    * Get the category id from its name
    * by Eric Celeste / http://eric.clst.org
@@ -244,7 +303,7 @@ class CatList{
       return null;
     endif;
   }
-  
+
   /**
    * Load morelink name and link to the category:
    */
@@ -276,7 +335,7 @@ class CatList{
     if($this->params['customfield_display'] != ''):
       $lcp_customs = '';
 
-      //Doesn't work for many when having spaces:
+      //Doesn't work for many custom fields when having spaces:
       $custom_key = trim($custom_key);
 
       //Create array for many fields:
@@ -286,18 +345,21 @@ class CatList{
       $custom_fields = get_post_custom($post_id);
 
       //Loop on custom fields and if there's a value, add it:
-      foreach ($custom_array as $something) :
-        $my_custom_field = $custom_fields[$something];
-        if (sizeof($my_custom_field) > 0 ):
-          foreach ( $my_custom_field as $key => $value ) :
-            $lcp_customs .= "<div class=\"lcp-customfield\">" .
-              $something. " : " . $value . "</div>";
-          endforeach;
+      foreach ($custom_array as $user_customfield) :
+        if(isset($custom_fields[$user_customfield])):
+          $my_custom_field = $custom_fields[$user_customfield];
+
+          if (sizeof($my_custom_field) > 0 ):
+            foreach ( $my_custom_field as $key => $value ) :
+              if ($this->params['customfield_display_name'] != "no")
+                $lcp_customs .= $user_customfield . " : ";
+              $lcp_customs .= $value;
+            endforeach;
+          endif;
         endif;
       endforeach;
 
       return $lcp_customs;
-
     else:
       return null;
     endif;
@@ -322,11 +384,27 @@ class CatList{
   }
 
 
+  /** Pagination **/
+  public function get_page(){
+    return $this->page;
+  }
+
+  public function get_posts_count(){
+    return $this->posts_count;
+  }
+
+  public function get_number_posts(){
+    return $this->params['numberposts'];
+  }
+
+  public function get_instance(){
+    return $this->instance;
+  }
 
   public function get_date_to_show($single){
     if ($this->params['date']=='yes'):
       //by Verex, great idea!
-      return  get_the_time($this->params['dateformat'], $single);
+      return get_the_time($this->params['dateformat'], $single);
     else:
       return null;
     endif;
@@ -338,13 +416,21 @@ class CatList{
         $single->post_content):
 
       $lcp_content = $single->post_content;
-      /* Need to put some more thought on this!
-       * Added to stop a post with catlist to display an infinite loop of
-       * catlist shortcode parsing
-       * added to parse shortcodes
-       */
       $lcp_content = apply_filters('the_content', $lcp_content);
       $lcp_content = str_replace(']]>', ']]&gt', $lcp_content);
+
+      if ( preg_match('/[\S\s]+(<!--more(.*?)?-->)[\S\s]+/', $lcp_content, $matches) ):
+        if( empty($this->params['posts_morelink']) ):
+          $lcp_more = __('Continue reading &rarr;', 'list-category-posts');
+        else:
+          $lcp_more = '';
+        endif;
+        $lcp_post_content = explode($matches[1], $lcp_content);
+        $lcp_content = $lcp_post_content[0] .
+          ' <a href="' . get_permalink($single->ID) . '" title="' . "$lcp_more" . '">' .
+          $lcp_more . '</a>';
+      endif;
+
       return $lcp_content;
     else:
       return null;
@@ -352,25 +438,34 @@ class CatList{
   }
 
   public function get_excerpt($single){
-    if ($this->params['excerpt']=='yes' &&
-        !($this->params['content']=='yes' &&
-        $single->post_content) ):
+    if ( !empty($this->params['excerpt']) && $this->params['excerpt']=='yes'){
 
-      if($single->post_excerpt && $this->params['excerpt_overwrite'] != 'yes'):
-        return $lcp_excerpt = $this->lcp_trim_excerpt($single->post_excerpt);
-      endif;
+      if($single->post_excerpt == ("")){
+        //No excerpt, generate one:
+        $lcp_excerpt = $this->lcp_trim_excerpt($single->post_content);
+      }else{
+        if(!empty($this->params['excerpt_overwrite']) &&
+           $this->params['excerpt_overwrite'] == 'yes'){
+          // Excerpt but we want to overwrite it:";
+          $lcp_excerpt = $this->lcp_trim_excerpt($single->post_content);
+        } else {
+          // Bring post excerpt;
+          $lcp_excerpt = $this->lcp_trim_excerpt($single->post_excerpt);
+        }
+      }
 
-      return $lcp_excerpt = $this->lcp_trim_excerpt($single->post_content);
-    else:
-      return null;
-    endif;
+      if( strlen($lcp_excerpt) < 1 ){
+        $lcp_excerpt = $single->post_title;
+      }
+      return $lcp_excerpt;
+    }
   }
-
-  private function lcp_trim_excerpt($text = ''){
+ 
+ private function lcp_trim_excerpt($text = ''){
     $excerpt_length = intval($this->params['excerpt_size']);
 
     $text = strip_shortcodes($text);
-    $text = apply_filters('the_content', $text);
+    $text = apply_filters('the_excerpt', $text);
     $text = str_replace(']]>',']]&gt;', $text);
 
     if( $this->lcp_not_empty('excerpt_strip') &&
@@ -399,7 +494,18 @@ class CatList{
     if ($this->params['thumbnail']=='yes'):
       $lcp_thumbnail = '';
       if ( has_post_thumbnail($single->ID) ):
-        if ( in_array( $this->params['thumbnail_size'],array('thumbnail', 'medium', 'large', 'full') )):
+
+        $available_image_sizes = array_unique(
+                                            array_merge(
+                                                        get_intermediate_image_sizes(),
+                                                        array("thumbnail", "medium", "large", "full")
+                                                        )
+                                            );
+        if ( in_array(
+                      $this->params['thumbnail_size'],
+                      $available_image_sizes
+                      )
+             ):
           $lcp_thumb_size = $this->params['thumbnail_size'];
         elseif ($this->params['thumbnail_size']):
           $lcp_thumb_size = explode(",", $this->params['thumbnail_size']);
@@ -407,7 +513,7 @@ class CatList{
           $lcp_thumb_size = 'thumbnail';
         endif;
 
-        $lcp_thumbnail = '<a href="' . get_permalink($single->ID).'">';
+        $lcp_thumbnail = '<a href="' . get_permalink($single->ID).'" title="' . $single->post_title . '">';
 
         $lcp_thumbnail .= get_the_post_thumbnail(
           $single->ID,
@@ -421,6 +527,8 @@ class CatList{
               preg_match("/([a-zA-Z0-9\-\_]+\.|)youtube\.com\/watch(\?v\=|\/v\/)([a-zA-Z0-9\-\_]{11})([^<\s]*)/", $single->post_content, $matches)
               ||
               preg_match("/([a-zA-Z0-9\-\_]+\.|)youtube\.com\/(v\/)([a-zA-Z0-9\-\_]{11})([^<\s]*)/", $single->post_content, $matches)
+              ||
+              preg_match("/([a-zA-Z0-9\-\_]+\.|)youtube\.com\/(embed)\/([a-zA-Z0-9\-\_]{11})[^<\s]*/", $single->post_content, $matches)
               ):
         $youtubeurl = $matches[0];
 
@@ -428,11 +536,15 @@ class CatList{
           $imageurl = "http://i.ytimg.com/vi/{$matches[3]}/1.jpg";
         endif;
 
-        $lcp_thumbnail = '<a href="' . get_permalink($single->ID).'">' .
-          '<img src="' . $imageurl .
-          ( ($lcp_thumb_class != null) ? 'class="' . $lcp_thumb_class .'"' : null ) .
-          '" alt="' . $single->title . '" />';
-        $lcp_thumbnail .= '</a>';
+        $lcp_ytimage = '<img src="' . $imageurl . '" alt="' . $single->post_title . '" />';
+
+        if ($lcp_thumb_class != null):
+          $thmbn_class = ' class="' . $lcp_thumb_class . '" />';
+        $lcp_ytimage = preg_replace("/\>/", $thmbn_class, $lcp_ytimage);
+        endif;
+
+        $lcp_thumbnail .= '<a href="' . get_permalink($single->ID).'">' . $lcp_ytimage . '</a>';
+
       endif;
     endif;
     return $lcp_thumbnail;
