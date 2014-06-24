@@ -7,7 +7,6 @@
 class CatList{
   private $params = array();
   private $lcp_category_id = 0;
-  private $category_param;
   private $exclude;
   private $page = 1;
   private $posts_count = 0;
@@ -37,12 +36,7 @@ class CatList{
    * Order the parameters and query the DB for posts
    */
   private function set_lcp_parameters(){
-    if (is_array($this->lcp_category_id)):
-      $args = array('category__and' => $this->lcp_category_id);
-    else:
-      $args = array('cat'=> $this->lcp_category_id);
-    endif;
-
+    $args = $this->lcp_categories();
     $args = array_merge($args, array(
       'numberposts' => $this->params['numberposts'],
       'orderby' => $this->params['orderby'],
@@ -50,37 +44,11 @@ class CatList{
       'offset' => $this->params['offset']
     ));
 
-    //Exclude
-    if( $this->lcp_not_empty('excludeposts') ):
-      $exclude = array(
-                       'post__not_in' => explode(",", $this->params['excludeposts'])
-                       );
-      if (strpos($this->params['excludeposts'], 'this') > -1) :
-        $exclude = array_merge(
-                               $exclude,
-                               array('post__not_in' => array(
-                                                             $this->lcp_get_current_post_id()
-                                                             )
-                                     )
-                               );
-      endif;
-      $args = array_merge($args, $exclude);
-    endif;
+    // Check posts to exclude
+    $args = $this->lcp_check_excludes($args);
 
-    // Post type, status, parent params:
-    if($this->lcp_not_empty('post_type')):
-      $args['post_type'] = $this->params['post_type'];
-    endif;
-
-    if($this->lcp_not_empty('post_status')):
-      $args['post_status'] = array(
-                                   $this->params['post_status']
-                                   );
-    endif;
-
-    if($this->lcp_not_empty('post_parent')):
-      $args['post_parent'] = $this->params['post_parent'];
-    endif;
+    // Check type, status, parent params
+    $args = $this->lcp_types_and_statuses($args);
 
     if($this->lcp_not_empty('year')):
       $args['year'] = $this->params['year'];
@@ -171,10 +139,10 @@ class CatList{
     // http://core.trac.wordpress.org/browser/tags/3.7.1/src/wp-includes/post.php#L1686
     $args['posts_per_page'] = $args['numberposts'];
 
-    remove_all_filters('posts_orderby');
     $query = new WP_Query;
     $this->lcp_categories_posts = $query->query($args);
     $this->posts_count = $query->found_posts;
+    remove_all_filters('posts_orderby');
     remove_all_filters('posts_where');
   }
 
@@ -191,6 +159,58 @@ class CatList{
     experience if I returned an empty list in certain cases.
     private function lcp_should_return_posts() */
 
+  /** HELPER FUNCTIONS **/
+
+  /**
+   * Check if there's one or more categories.
+   * Used in the beginning when setting up the parameters.
+   */
+  private function lcp_categories(){
+    if (is_array($this->lcp_category_id)):
+      return array('category__and' => $this->lcp_category_id);
+    else:
+      return array('cat'=> $this->lcp_category_id);
+    endif;
+  }
+
+  // Check posts to exclude
+  private function lcp_check_excludes($args){
+    if( $this->lcp_not_empty('excludeposts') ){
+      $exclude = array(
+        'post__not_in' => explode(",", $this->params['excludeposts'])
+      );
+      if (strpos($this->params['excludeposts'], 'this') > -1){
+        $exclude = array_merge(
+          $exclude,
+          array('post__not_in' => array($this->lcp_get_current_post_id() ) )
+        );
+      }
+      $args = array_merge($args, $exclude);
+    }
+    return $args;
+  }
+
+  private function lcp_types_and_statuses($args){
+    // Post type, status, parent params:
+    if($this->lcp_not_empty('post_type')):
+      $args['post_type'] = $this->params['post_type'];
+    endif;
+
+    if($this->lcp_not_empty('post_status')):
+      $args['post_status'] = array(
+        $this->params['post_status']
+      );
+    endif;
+
+    if($this->lcp_not_empty('post_parent')):
+      $args['post_parent'] = $this->params['post_parent'];
+    endif;
+    return $args;
+  }
+
+  /**
+   * Check for empty parameters (being empty strings or zero).
+   */
   private function lcp_not_empty($param){
       return (
           isset($this->params[$param]) &&
@@ -200,12 +220,10 @@ class CatList{
       );
   }
 
-
   private function lcp_get_current_post_id(){
     global $post;
     return $post->ID;
   }
-
 
   private function get_lcp_category(){
     if ( $this->lcp_not_empty('categorypage') &&
@@ -416,9 +434,17 @@ class CatList{
   }
 
   public function get_date_to_show($single){
-    if ($this->params['date']=='yes'):
+    if ($this->params['date'] == 'yes'):
       //by Verex, great idea!
       return get_the_time($this->params['dateformat'], $single);
+    else:
+      return null;
+    endif;
+  }
+
+  public function get_modified_date_to_show($single){
+    if ($this->params['date_modified'] == 'yes'):
+      return get_the_modified_time($this->params['dateformat'], $single);
     else:
       return null;
     endif;

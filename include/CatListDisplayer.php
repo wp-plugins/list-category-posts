@@ -117,9 +117,12 @@ class CatListDisplayer {
     $pag_output = '';
     if (!empty($this->params['pagination']) && $this->params['pagination'] == "yes"):
       $lcp_paginator = '';
+      $number_posts = $this->catlist->get_number_posts();
       $pages_count = ceil (
-                           $this->catlist->get_posts_count() / $this->catlist->get_number_posts()
-                           );
+        $this->catlist->get_posts_count() /
+        # Avoid dividing by 0 (pointed out by @rhj4)
+        max( array( 1, $number_posts ) )
+      );
       if ($pages_count > 1){
         for($i = 1; $i <= $pages_count; $i++){
           $lcp_paginator .=  $this->lcp_page_link($i);
@@ -208,6 +211,15 @@ class CatListDisplayer {
                                              $this->params['date_class']);
     else:
       $lcp_display_output .= $this->get_date($single);
+    endif;
+
+    // Date Modified
+    if (!empty($this->params['date_modified_tag']) || !empty($this->params['date_modified_class'])):
+      $lcp_display_output .= $this->get_modified_date($single,
+                                             $this->params['date_modified_tag'],
+                                             $this->params['date_modified_class']);
+    else:
+      $lcp_display_output .= $this->get_modified_date($single);
     endif;
 
     // Author
@@ -320,6 +332,11 @@ class CatListDisplayer {
 
   private function get_date($single, $tag = null, $css_class = null){
     $info = " " . $this->catlist->get_date_to_show($single);
+    return $this->assign_style($info, $tag, $css_class);
+  }
+
+  private function get_modified_date($single, $tag = null, $css_class = null){
+    $info = " " . $this->catlist->get_modified_date_to_show($single);
     return $this->assign_style($info, $tag, $css_class);
   }
 

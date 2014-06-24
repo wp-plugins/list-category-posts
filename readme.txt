@@ -4,7 +4,7 @@ Donate Link: http://picandocodigo.net/programacion/wordpress/list-category-posts
 Tags: list, categories, posts, cms
 Requires at least: 3.3
 Tested up to: 3.9.1
-Stable tag: 0.47
+Stable tag: 0.48
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,13 +29,19 @@ list:
 There's an options page which only has one option to set for the
 plugin at the moment. But new options will be implemented on demand.
 
-**Please read [the instructions](http://wordpress.org/extend/plugins/list-category-posts/other_notes/)** to learn what parameters are available and how to use them.
+**[Please read the instructions](http://wordpress.org/extend/plugins/list-category-posts/other_notes/)** to learn what parameters are available and how to use them.
 
-**Customization**: The different elements to display con be styled with CSS. you can define an HTML tag to wrap the element with, and a CSS class for this tag. Check [Other Notes](http://wordpress.org/extend/plugins/list-category-posts/other_notes/) for usage.
+You can find **Frequently Asked Questions** [here](https://github.com/picandocodigo/List-Category-Posts/blob/master/doc/FAQ.md#frequently-asked-questions).
+
+**Customization**
+
+The different elements to display con be styled with CSS. you can define an HTML tag to wrap the element with, and a CSS class for this tag. Check [Other Notes](http://wordpress.org/extend/plugins/list-category-posts/other_notes/) for usage.
 
 Great to use WordPress as a CMS, and create pages with several categories posts.
 
-**Widget**: It includes a widget which works pretty much the same as the plugin. Just add as many widgets as you want, and select all the available options from the Appearence > Widgets page.
+**Widget**
+
+The plugin includes a widget which works pretty much the same as the plugin. Just add as many widgets as you want, and select all the available options from the Appearence > Widgets page.
 
 Please, read the information on [Other Notes](http://wordpress.org/extend/plugins/list-category-posts/other_notes/) and [Changelog](http://wordpress.org/extend/plugins/list-category-posts/changelog/) to be aware of new functionality, and improvements to the plugin.
 
@@ -179,6 +185,11 @@ update the plugin.
     tag to wrap the date in with `date_class` and `date_tag` (see HTML
     & CSS Customization further below).
 
+* **date_modified** - Display the date a post was last modified next
+    to the title. You can set a css class and an html tag to wrap the
+    date in with `date_modified_class` and `date_modified_tag` (see
+    HTML & CSS Customization further below).
+
 * **author** - Display the post's author next to the title. Default is
     'no', use author=yes to activate it. You can set a css class and an html
     tag to wrap the author name in with `author_class` and `author_tag` (see HTML
@@ -312,9 +323,10 @@ The customizable elements (so far) are: author, catlink (category link), comment
 
 The parameters are:
 `autor_tag, author_class, catlink_tag, catlink_class, comments_tag,
-comments_class, date_tag, date_class, excerpt_tag, excerpt_class,
-morelink_class, thumbnail_class, title_tag, title_class,
-posts_morelink_class, customfield_tag, customfield_class`
+comments_class, date_tag, date_class, date_modified_tag,
+date_modified_class, excerpt_tag, excerpt_class, morelink_class,
+thumbnail_class, title_tag, title_class, posts_morelink_class,
+customfield_tag, customfield_class`
 
 So let's say you want to wrap the displayed comments count with the p tag and a "lcp_comments" class, you would do:
 `[catlist id=7 comments=yes comments_tag=p comments_class=lcp_comments]`
@@ -358,7 +370,7 @@ You can have as many different templates as you want, and use them in different 
 * **Instructions** on how to use the plugin: http://wordpress.org/extend/plugins/list-category-posts/other_notes/ - **Read it**.
 * **Template system** how to customize the way the posts are shown: http://wordpress.org/extend/plugins/list-category-posts/other_notes/. I am aware the Template System is not really friendly right now, I'll work on this whenever I get the time to work on the plugin for a while.
 * **New feature requests, Bug fixes, enhancements** - You can post them on [GitHub Issues](https://github.com/picandocodigo/List-Category-Posts/issues).
-* **Questions** For questions either use the [Support forum](http://wordpress.org/support/plugin/list-category-posts) or [WordPress Answers](http://wordpress.stackexchange.com/). It's a great place with a large community of WordPress users and developers. Just [ask your question](http://wordpress.stackexchange.com/questions/ask?tags=plugin-list-category-posts) using the 'plugin-list-category-post' tag.
+* **Questions** For questions either use the [Support forum](http://wordpress.org/support/plugin/list-category-posts) or [WordPress Answers](http://wordpress.stackexchange.com/).Just [ask your question](http://wordpress.stackexchange.com/questions/ask?tags=plugin-list-category-posts) using the 'plugin-list-category-post' tag.
 
 
 * **FAQ**
@@ -397,6 +409,11 @@ Widget built for WordPress 2.8's Widget API, so you need at least WP 2.8 to use 
 Template system has changed. Custom templates should be stored in WordPress theme folder.
 
 == Changelog ==
+
+= 0.48 =
+
+ * Bug fixes
+ * Adds parameter to show modified date of posts. Thanks Eric Sandine for the Pull Request :)
 
 = 0.47 =
 
