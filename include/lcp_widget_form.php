@@ -20,7 +20,8 @@
                     'thumbnail_size' =>'',
                     'offset'=>'',
                     'show_catlink'=>'',
-                    'morelink' =>''
+                    'morelink' =>'',
+                    'template' => ''
                     );
   $instance = wp_parse_args( (array) $instance, $default);
 
@@ -41,6 +42,7 @@
   $thumbnail = strip_tags($instance['thumbnail']);
   $thumbnail_size = strip_tags($instance['thumbnail_size']);
   $morelink = strip_tags($instance['morelink']);
+  $template = strip_tags($instance['template']);
 
 ?>
 
@@ -222,4 +224,27 @@
   <input class="widefat" id="<?php echo $this->get_field_id('morelink'); ?>"
     name="<?php echo $this->get_field_name('morelink'); ?>" type="text"
     value="<?php echo esc_attr($morelink); ?>" />
+</p>
+
+<p>
+  <label for="<?php echo $this->get_field_id('template'); ?>">
+    <?php _e("Template", 'list-category-posts')?>:
+  </label>
+  <br/>
+  <select id="<?php echo $this->get_field_id('template'); ?>" name="<?php echo $this->get_field_name('template'); ?>">
+    <?php
+      $templates = CatListDisplayer::get_templates();
+      $templates[] = 'default';
+      foreach ($templates as $tmp) :
+        $option = '<option value="' . $tmp . '" ';
+        if ($tmp == $template) :
+          $option .= ' selected = "selected" ';
+        endif;
+        $option .=  '">';
+        $option .= $tmp;
+        $option .= '</option>';
+        echo $option;
+      endforeach;
+    ?>
+  </select>
 </p>
