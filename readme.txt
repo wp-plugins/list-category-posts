@@ -4,7 +4,7 @@ Donate Link: http://picandocodigo.net/programacion/wordpress/list-category-posts
 Tags: list, categories, posts, cms
 Requires at least: 3.3
 Tested up to: 4.1
-Stable tag: 0.53
+Stable tag: 0.54
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -132,10 +132,6 @@ update the plugin.
 
 ==Other parameters==
 
-* **starting_with** - Get posts starting with a given letter. You can
-use several letters. Example: `[catlist starting_with="m,o,t"]` will
-list posts whose title start with either m, o or t.
-
 * **author_posts** - Get posts by author. Use 'user_nicename' (NOT
     name). Example: `[catlist author_posts="fernando"]`
 
@@ -169,7 +165,9 @@ list posts whose title start with either m, o or t.
   * **ASC** - Ascending (lowest to highest).
   * **DESC** - Descending (highest to lowest). Ex: `[catlist name=mycategory orderby=title order=asc]`
 
-* **starting_with** - Get posts whose title starts with a certain letter. Example: `[catlist starting_with="l"]` will list all posts whose title starts with L.
+* **starting_with** - Get posts whose title starts with a certain
+    letter. Example: `[catlist starting_with="l"]` will list all posts
+    whose title starts with L. You can use several letters: `[catlist starting_with="m,o,t"]`.
 
 * **numberposts** - Number of posts to return. Set to 0 to use the max
     number of posts per page. Set to -1 to remove the limit.
@@ -241,7 +239,7 @@ Show the full content of the post. If there's a &lt;!--more--&gt; tag in the pos
 
 * **thumbnail_class** - Set a CSS class for the thumbnail.
 
-* **post_type** - The type of post to show. Available options are: post - Default, page, attachment, any - all post types.
+* **post_type** - The type of post to show. Available options are: post - Default, page, attachment, any - all post types. You can use several types, example: `[catlist post_type="page,post" numberposts=-1]`
 
 * **post_status** - use post status, default value is 'publish'. Valid values:
   * **publish** - a published post or page.
@@ -253,6 +251,7 @@ Show the full content of the post. If there's a &lt;!--more--&gt; tag in the pos
   * **inherit** - a revision. see get_children.
   * **trash** - post is in trashbin (available with Version 2.9).
   * **any** - retrieves any status except those from post types with 'exclude_from_search' set to true.
+  You can use several post statuses. Example: `[catlist post_status="future, publish" excludeposts=this]`
 
 * **show_protected** - Show posts protected by password. By default
     they are not displayed. Use: `[catlist show_protected=yes]`
@@ -333,7 +332,17 @@ Then just add a new text widget to your blog and use the shortcode there as the 
 
 == HTML & CSS Customization ==
 
-You can customize what HTML tags different elements will be sorrounded with and a CSS class for this element, or just a CSS class which will wrap the element with a `span` tag.
+By default, the plugin lists the posts in an unordered list with the
+`lcp_catlist` CSS class, like this:
+
+`<ul class="lcp_catlist">`
+
+So if you want to customize the appearance of the List Category Posts
+lists, you can just edit the lcp_catlist class in your theme's CSS.
+
+You can also customize what HTML tags different elements will be
+surrounded with, and set a CSS class for this element, or just a CSS class
+which will wrap the element with a `span` tag.
 
 The customizable elements (so far) are: author, catlink (category link), comments, date, excerpt, morelink ("Read More" link), thumbnail and title (post title).
 
@@ -426,8 +435,17 @@ Template system has changed. Custom templates should be stored in WordPress them
 
 == Changelog ==
 
+= 0.54 =
+ * Adds http/https check for pagination links.
+ * Fixes `post_status` and `post_type` parameters for using multiple post statuses and types.
+ * Big refactor: Thumbnail code, parameters moved to new class,
+ created util class, removed bad and repeated code, moved category
+ code to new class.  Small fixes all around the place. Went from a
+ very bad 1.77 GPA to 3.23 on CodeClimate.
+
+
 = 0.53 =
- * Adds "starting_with" parameter by Diego Sorribas. Thank you!
+ * Makes "starting_with" parameter accept several letters, by Diego Sorribas. Thank you!
 
 = 0.52 =
  * Small fix for pagination and query string.
