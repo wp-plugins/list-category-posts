@@ -225,7 +225,10 @@ class CatListDisplayer {
 
     $lcp_display_output = '<'. $tag . $class . '>';
 
-    $lcp_display_output .= $this->get_post_title($single);
+
+    if ( $this->params['no_post_titles'] != 'yes' ):
+      $lcp_display_output .= $this->get_post_title($single);
+    endif;
 
     // Comments count
     if (!empty($this->params['comments_tag'])):

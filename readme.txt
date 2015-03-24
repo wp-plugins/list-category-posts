@@ -3,8 +3,8 @@ Contributors: fernandobt
 Donate Link: http://picandocodigo.net/programacion/wordpress/list-category-posts-wordpress-plugin-english/#support
 Tags: list, categories, posts, cms
 Requires at least: 3.3
-Tested up to: 4.1
-Stable tag: 0.56
+Tested up to: 4.1.1
+Stable tag: 0.57
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -328,6 +328,8 @@ Will print the value of the Custom Field "Mood" but not the text
 
 * **link_target** - Select the `target` attribute for links to posts (target=_blank, _self, _parent, _top, *framename*). Example: `[catlink id=3 link_target=_blank]` will create: `<a href="http://localhost/wordpress/?p=45" title="Test post" target="_blank">Test post</a>`
 
+* **no_post_titles** - If set to `yes`, no post titles will be shown. This may make sense together with `content=yes`.
+
 == Widget ==
 
 The widget is quite simple, and it doesn't implement all of the plugin's functionality. To use a shortcode in a widget add this code to your theme's functions.php file:
@@ -440,6 +442,11 @@ Widget built for WordPress 2.8's Widget API, so you need at least WP 2.8 to use 
 Template system has changed. Custom templates should be stored in WordPress theme folder.
 
 == Changelog ==
+
+= 0.57 =
+ * Add custom image sizes to the list of selectable image sizes in the widget. Thanks [nuss](https://github.com/nuss) for the Pull Request!
+ * New Attribute 'no_post_titles'. Thanks [thomasWeise](https://github.com/thomasWeise) for the Pull Request!
+ * Finnish localization. Thanks [Newman101](https://github.com/Newman101) for the Pull Request!
 
 = 0.56 =
  * Adds Indonesian (Bahasa Indonesia) translation. Thanks Dhyayi Warapsari!
