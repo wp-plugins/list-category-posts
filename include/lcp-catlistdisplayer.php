@@ -186,18 +186,22 @@ class CatListDisplayer {
     if ($page == $current_page){
       $link = "<li>$current_page</li>";
     } else {
-      $amp = ( strpos($_SERVER["REQUEST_URI"], "?") ) ? "&" : "";
+      $request_uri = filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_STRING);
+      $query = filter_input(INPUT_SERVER, 'QUERY_STRING', FILTER_SANITIZE_STRING);
+      $amp = ( strpos( $request_uri, "?") ) ? "&" : "";
       $pattern = "/[&|?]?lcp_page" . preg_quote($this->catlist->get_instance()) . "=([0-9]+)/";
-      $query = preg_replace($pattern, '', $_SERVER['QUERY_STRING']);
+      $query = preg_replace($pattern, '', $query);
 
-      $url = strtok($_SERVER["REQUEST_URI"],'?');
+      $url = strtok($request_uri,'?');
       $protocol = "http";
-      if ( (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
-        $_SERVER['SERVER_PORT'] == 443){
+      $port = filter_input(INPUT_SERVER, 'SERVER_PORT', FILTER_SANITIZE_STRING);
+      $https = filter_input(INPUT_SERVER, 'HTTPS', FILTER_SANITIZE_STRING);
+      if ( (!empty($https) && $https !== 'off') ||
+        $port == 443){
         $protocol = "https";
       }
-
-      $page_link = "$protocol://$_SERVER[HTTP_HOST]$url?$query" .
+      $http_host = filter_input(INPUT_SERVER, 'HTTP_HOST', FILTER_SANITIZE_STRING);
+      $page_link = "$protocol://$http_host$url?$query" .
         $amp . "lcp_page" . $this->catlist->get_instance() . "=". $page .
         "#lcp_instance_" . $this->catlist->get_instance();
       $link .=  "<li><a href='$page_link' title='$page'>";
@@ -206,6 +210,8 @@ class CatListDisplayer {
 
       $link .= "</a></li>";
     }
+    // WA: Replace '?&' by '?' to avoid potential redirection problems later on
+    $link = str_replace('?&', '?', $link );
     return $link;
   }
 
@@ -231,17 +237,7 @@ class CatListDisplayer {
     endif;
 
     // Comments count
-    if (!empty($this->params['comments_tag'])):
-      if (!empty($this->params['comments_class'])):
-        $lcp_display_output .= $this->get_comments($single,
-                                       $this->params['comments_tag'],
-                                       $this->params['comments_class']);
-      else:
-        $lcp_display_output .= $this->get_comments($single, $this->params['comments_tag']);
-      endif;
-    else:
-      $lcp_display_output .= $this->get_comments($single);
-    endif;
+    $lcp_display_output .= $this->get_stuff_with_tags_and_classes('comments', $single);
 
     // Date
     if (!empty($this->params['date_tag']) || !empty($this->params['date_class'])):
@@ -262,17 +258,7 @@ class CatListDisplayer {
     endif;
 
     // Author
-    if (!empty($this->params['author_tag'])):
-      if (!empty($this->params['author_class'])):
-        $lcp_display_output .= $this->get_author($single,
-                                     $this->params['author_tag'],
-                                     $this->params['author_class']);
-      else:
-        $lcp_display_output .= $this->get_author($single, $this->params['author_tag']);
-      endif;
-    else:
-      $lcp_display_output .= $this->get_author($single);
-    endif;
+    $lcp_display_output .= $this->get_stuff_with_tags_and_classes('author', $single);
 
     // Display ID
     if (!empty($this->params['display_id']) && $this->params['display_id'] == 'yes'){
@@ -284,17 +270,7 @@ class CatListDisplayer {
 
     $lcp_display_output .= $this->get_thumbnail($single);
 
-    if (!empty($this->params['content_tag'])):
-      if (!empty($this->params['content_class'])):
-        $lcp_display_output .= $this->get_content($single,
-                                     $this->params['content_tag'],
-                                     $this->params['content_class']);
-      else:
-        $lcp_display_output .= $this->get_content($single, $this->params['content_tag']);
-      endif;
-    else:
-      $lcp_display_output .= $this->get_content($single);
-    endif;
+    $lcp_display_output .= $this->get_stuff_with_tags_and_classes('content', $single);
 
     if (!empty($this->params['excerpt_tag'])):
       if (!empty($this->params['excerpt_class'])):
@@ -312,6 +288,21 @@ class CatListDisplayer {
 
     $lcp_display_output .= '</' . $tag . '>';
     return $lcp_display_output;
+  }
+
+  private function get_stuff_with_tags_and_classes($entity, $single){
+    $result = '';
+    $stuffFunction = 'get_' . $entity;
+    if (!empty($this->params[$entity . '_tag'])):
+      if (!empty($this->params[$entity . '_class'])):
+        $result = $this->stuffFunction($single, $this->params[$entity . '_tag'], $this->params[$entity . '_class']);
+      else:
+        $result = $this->$stuffFunction($single, $this->params[$entity . '_tag']);
+      endif;
+    else:
+      $result = $this->$stuffFunction($single);
+    endif;
+    return $result;
   }
 
   private function category_title(){
@@ -405,7 +396,13 @@ class CatListDisplayer {
     return $this->assign_style($info, $tag);
   }
 
-  private function get_post_title($single, $tag = null, $css_class = null){
+  // Link is a parameter here in case you want to use it on a template
+  // and not show the links for all the shortcodes using this template:
+  private function get_post_title($single, $tag = null, $css_class = null, $link = true){
+    if ( !$link || !empty($this->params['link_titles']) && $this->params['link_titles'] === "false" ) {
+      return $single->post_title;
+    }
+
     $info = '<a href="' . get_permalink($single->ID);
 
     $lcp_post_title = apply_filters('the_title', $single->post_title, $single->ID);
