@@ -195,9 +195,7 @@ class CatListDisplayer {
       $url = strtok($request_uri,'?');
       $protocol = "http";
       $port = $_SERVER['SERVER_PORT'];
-      $https = $_SERVER['HTTPS'];
-      if ( (!empty($https) && $https !== 'off') ||
-        $port == 443){
+      if ( (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $port == 443){
         $protocol = "https";
       }
       $http_host = $_SERVER['HTTP_HOST'];
@@ -224,9 +222,10 @@ class CatListDisplayer {
     global $post;
 
     $class ='';
-    if ( $post->ID == $single->ID ):
+
+    if ( is_object($post->ID) && is_object($single->ID) && $post->ID == $single->ID ){
       $class = " class = current ";
-    endif;
+    }
 
     $lcp_display_output = '<'. $tag . $class . '>';
 
@@ -294,7 +293,7 @@ class CatListDisplayer {
     $stuffFunction = 'get_' . $entity;
     if (!empty($this->params[$entity . '_tag'])):
       if (!empty($this->params[$entity . '_class'])):
-        $result = $this->stuffFunction($single, $this->params[$entity . '_tag'], $this->params[$entity . '_class']);
+        $result = $this->$stuffFunction($single, $this->params[$entity . '_tag'], $this->params[$entity . '_class']);
       else:
         $result = $this->$stuffFunction($single, $this->params[$entity . '_tag']);
       endif;
@@ -398,22 +397,33 @@ class CatListDisplayer {
   // Link is a parameter here in case you want to use it on a template
   // and not show the links for all the shortcodes using this template:
   private function get_post_title($single, $tag = null, $css_class = null, $link = true){
-    if ( !$link || !empty($this->params['link_titles']) && $this->params['link_titles'] === "false" ) {
-      return $single->post_title;
-    }
-
-    $info = '<a href="' . get_permalink($single->ID);
-
     $lcp_post_title = apply_filters('the_title', $single->post_title, $single->ID);
 
-    if ( !empty($this->params['title_limit']) && $this->params['title_limit'] != "0" ):
-      $lcp_post_title = substr($lcp_post_title, 0, intval($this->params['title_limit']));
-      if( strlen($lcp_post_title) >= intval($this->params['title_limit']) ):
-        $lcp_post_title .= "&hellip;";
+    if ( !empty($this->params['title_limit']) && $this->params['title_limit'] !== "0" ):
+      $title_limit = intval($this->params['title_limit']);
+      if( mb_strlen($lcp_post_title) > $title_limit ):
+        $lcp_post_title = mb_substr($lcp_post_title, 0, $title_limit) . "&hellip;";
       endif;
     endif;
 
-    $info.=  '" title="' . wptexturize($single->post_title) . '"';
+    if (!empty($this->params['title_tag'])){
+      $pre = "<" . $this->params['title_tag'];
+      if (!empty($this->params['title_class'])){
+        $pre .= ' class="' . $this->params['title_class'] . '"';
+      }
+      $pre .= '>';
+      $post = "</" . $this->params['title_tag'] . ">";
+    }else{
+      $pre = $post = '';
+    }
+
+    if ( !$link ||
+         (!empty($this->params['link_titles']) &&
+          ( $this->params['link_titles'] === "false" || $this->params['link_titles'] === "no" ) ) ) {
+      return $pre . $lcp_post_title . $post;
+    }
+
+    $info = '<a href="' . get_permalink($single->ID) . '" title="' . wptexturize($single->post_title) . '"';
 
     if (!empty($this->params['link_target'])):
       $info .= ' target="' . $this->params['link_target'] . '" ';
@@ -430,15 +440,7 @@ class CatListDisplayer {
       $info .= " " . $this->params['post_suffix'];
     endif;
 
-    if (!empty($this->params['title_tag'])){
-      $pre = "<" . $this->params['title_tag'];
-      if (!empty($this->params['title_class'])){
-        $pre .= ' class="' . $this->params['title_class'] . '"';
-      }
-      $pre .= '>';
-      $post = "</" . $this->params['title_tag'] . ">";
-      $info = $pre . $info . $post;
-    }
+    $info = $pre . $info . $post;
 
     if( $tag !== null || $css_class !== null){
       $info = $this->assign_style($info, $tag, $css_class);
