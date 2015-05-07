@@ -458,8 +458,7 @@ Template system has changed. Custom templates should be stored in WordPress them
 = 0.60 =
 
 * Fixes the loop so that other plugins work as if this was a blog or archive post.
-See [issue
-#156](https://github.com/picandocodigo/List-Category-Posts/issues/156)
+See [issue #156](https://github.com/picandocodigo/List-Category-Posts/issues/156)
 on Github. Thanks Sophist-UK for this new version :)
 
 = 0.59.2 =
